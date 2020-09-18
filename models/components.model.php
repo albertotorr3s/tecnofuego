@@ -458,18 +458,18 @@ class components
 
                 case 41: // Número
                     $fbox .= '<div class="col-lg-3">
-                                    <div class="form-group">
-                                        <label class="form-control-label">' . $v['campo'] . ' <span class="text-danger">*</span></label>
-                                        <input type="text" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" required="">
-                                    </div>
-                                  </div>';
+                                        <div class="form-group">
+                                            <label class="form-control-label">' . $v['campo'] . ' <span class="text-danger">*</span></label>
+                                            <input type="number" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" required>
+                                        </div>
+                                      </div>';
                     break;
 
                 case 42: // Fecha
                     $fbox .= '<div class="col-lg-3">
                                     <div class="form-group">
                                         <label class="form-control-label">' . $v['campo'] . ' <span class="text-danger">*</span></label>
-                                        <input type="date" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" required="">
+                                        <input type="date" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" required>
                                     </div>
                                   </div>';
                     break;
@@ -478,7 +478,7 @@ class components
                     $fbox .= '<div class="col-lg-3">
                                     <div class="form-group">
                                         <label class="form-control-label">' . $v['campo'] . ' <span class="text-danger">*</span></label>
-                                        <input type="text" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" required="">
+                                        <input type="text" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" required>
                                     </div>
                                   </div>';
                     break;
@@ -515,12 +515,12 @@ class components
 
                 case 41: // Número
                     $fbox .= '<div class="col-lg-3">
-                                    <div class="form-group">
-                                        <label class="form-control-label">' . $v['campo'] . ' <span class="text-danger">*</span></label>
-                                        <input type="text" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" value="' . $v['valField'] . '" required>
-                                        <input type="hidden" id="' . $hfld . '" name="' . $hfld . '" value="' . $v['idVal'] . '">
-                                    </div>
-                                  </div>';
+                                        <div class="form-group">
+                                            <label class="form-control-label">' . $v['campo'] . ' <span class="text-danger">*</span></label>
+                                            <input type="number" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" value="' . $v['valField'] . '" required>
+                                            <input type="hidden" id="' . $hfld . '" name="' . $hfld . '" value="' . $v['idVal'] . '">
+                                        </div>
+                                      </div>';
                     break;
 
                 case 42: // Fecha

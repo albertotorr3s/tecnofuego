@@ -51,8 +51,8 @@
 						<input type="hidden" id="hidVlsAddComp" name="hidVlsAddComp" value="">
 						<input type="hidden" id="hidVlsDelComp" name="hidVlsDelComp" value="">
 						<!-- Control de repuestos -->
-						<input type="hidden" id="hidVlsAddRep" name="hidVlsAddRep" value="">
-						<input type="hidden" id="hidVlsDelRep" name="hidVlsDelRep" value="">
+						<input type="text" id="hidVlsAddRep" name="hidVlsAddRep" value="">
+						<input type="text" id="hidVlsDelRep" name="hidVlsDelRep" value="">
 
 						<ul class="nav nav-tabs" id="myTab" role="tablist">
 						  <li class="nav-item">
@@ -133,8 +133,8 @@
 
 								<div class="col-lg-6">
 									<div class="form-group">
-										<label class="form-control-label">Localización <span class="text-danger"></span></label>
-										<select id="slcLocal" name="slcLocal" class="form-control">{locatio}</select>
+										<label class="form-control-label">Localización <span class="text-danger">*</span></label>
+										<select id="slcLocal" name="slcLocal" class="form-control" required="">{locatio}</select>
 									</div>
 								</div>
 

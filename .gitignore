@@ -47,7 +47,3 @@ GitHub.sublime-settings
 
 # Archivos de log
 /log/*.log
-
-# End of https://www.gitignore.io/api/sublimetext,visualstudiocode
-/src/*.php
-src/globvars.php

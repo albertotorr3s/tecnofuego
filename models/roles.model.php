@@ -152,7 +152,7 @@
         public function guardar(){
 
             $data = json_decode($_POST['args']);
-            // var_dump($data);
+            var_dump($data);
             $info = array(
                 'role'      =>  mb_strtoupper($data->txtRole),
                 'edo_reg'   =>  $data->slcEstado
