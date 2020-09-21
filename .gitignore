@@ -49,4 +49,4 @@ GitHub.sublime-settings
 /log/*.log
 
 # Archivos de conexion a base de datos
-.src/*
+/src/*

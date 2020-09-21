@@ -22,7 +22,7 @@
 	define('HST_DBAS','localhost',TRUE);
 	define('HST_PORT','3306',TRUE);
 	define('USR_DBAS','root',TRUE);
-	 define('PSW_DBAS','',TRUE);
+	 define('PSW_DBAS','AZ92adx$!',TRUE);
 	//AZ92adx$!
 	define('DBA_DBAS','tecnofuego',TRUE);
 	define('CHAR_SET','utf8',TRUE);
