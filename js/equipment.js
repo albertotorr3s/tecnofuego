@@ -51,8 +51,6 @@ function lcomps(){
         'args'   : $('#hidLstComp').val()
     };
 
-    alert(pcomps.args);
-
     $.ajax({
         url: 'index.php',
         type: 'POST',
