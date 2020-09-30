@@ -1,5 +1,4 @@
 ﻿<?php
-
 	header("X-XSS-Protection: 1; mode=block");
     header("Expires: Tue, 03 Jul 2001 06:00:00 GMT");
     header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");

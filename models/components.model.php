@@ -3,7 +3,7 @@
 class components
 {
 
-    public function __construct(array $res)
+    public function __construct(array $res) 
     {
         $this->clstr = $res['cleanstr'];
         $this->crud = $res['crud'];
@@ -92,7 +92,10 @@ class components
                         AND ec.idCompo = c.id
                         AND e.id = ec.idEquip
                         AND p.idCategory = ct.id
-                        AND cv.idField IN (31,34) ";
+                        AND cv.idField IN (31,34)
+                        GROUP BY ec.idCompo;";
+
+
 
         $dp = array();
         $im = 1;
@@ -605,3 +608,4 @@ class components
         echo $ar['cant'];
     }
 }
+

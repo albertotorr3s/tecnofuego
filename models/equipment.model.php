@@ -805,7 +805,7 @@
 
         }
 
-        // Componentes seleccionados
+        // Componentes seleccionados 
         public function addcomps(string $data){
 
             $arr = explode(",", $data);

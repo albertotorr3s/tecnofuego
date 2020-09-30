@@ -24,7 +24,7 @@
 	define('USR_DBAS','root',TRUE);
 	 define('PSW_DBAS','AZ92adx$!',TRUE);
 	//AZ92adx$!
-	define('DBA_DBAS','tecnofuego',TRUE);
+	define('DBA_DBAS','tecnofuegoold',TRUE);
 	define('CHAR_SET','utf8',TRUE);
 	define('BD_PREFI','tec_',TRUE);
 	define('WHIT_TGS',array('<b>','<p>','<br>'),TRUE);

@@ -756,3 +756,179 @@ $(document).on('click','#btnSaveAct',function(){
   }
 
 });
+
+
+
+$(document).on('click','#compone-tab',function(){
+
+  
+  destroyTableParam('#tabCompos');
+  
+
+  let pcomps = {
+      'model'  : 'equipment',
+      'method' : 'addcomps',
+      'args'   : $('#hidLstComp').val()
+  };
+  
+
+  $.ajax({
+      url: 'index.php',
+      type: 'POST',
+      dataType: 'html',
+      data: pcomps,
+      cache: false, // Appends _={timestamp} to the request query string
+      success: function($dres) {
+
+          $('#tcompos').append($dres);
+          readTableComp();
+          renderDTParam('#tabCompos');
+
+          /*if( $dres.sts == 0 ){
+
+              let row = '';
+
+              $.each($dres.res, function(i, vlsc) {
+                  
+                  row += '<tr id="trCompo'+vlsc.item+'" idreg="'+vlsc.item+'">';
+                      row += '<td id="tdComps'+i+'" class="text-center">'+vlsc.item+'</td>';
+                      row += '<td>'+vlsc.descripcion+'</td>';
+                      row += '<td class="text-center">'+vlsc.consec+'</td>';
+                      row += '<td class="text-center">'+vlsc.familia+'</td>';
+                      row += '<td class="text-center">'+vlsc.categoria+'</td>';
+                      row += '<td class="text-center">'+vlsc.acciones+'</td>';
+                  row += '</tr>';
+
+              });
+
+              $('#tcompos').append(row);
+              readTableComp();
+
+          }*/
+
+      }
+  });
+
+});
+
+
+$(document).on('click','#btnSearchComp',function(){
+
+    destroyTableParam('#tabComposAdd');
+
+    var params = {
+        'model'  : 'equipment',
+        'method' : 'lstcompo',
+        'args'   : $('#frmModalCompo').formToObject()
+    };
+
+    if( $('#hidVlsComp').val() != '' ){
+
+        let acomp = '';
+
+        $("#tcompos tr").each(function(i) {
+            acomp += $(this).attr('idreg')+',';
+        });
+
+        params.args.comps = acomp;
+
+    } else {
+        params.args.comps = '';
+    }
+
+    //alert(params.args.comps);
+
+    $.ajax({
+        url: 'index.php',
+        type: 'POST',
+        dataType: 'html',
+        data: params,
+        cache: false, // Appends _={timestamp} to the request query string
+        success: function($dres) {
+            $('#detCompos').html($dres);
+            renderDTParam('#tabComposAdd');
+        }
+    });
+
+});
+
+$(document).on('click','#btnSaveModCompo',function(){
+
+    let compos = [];
+    
+    $(".chk-compo").each(function(index) {
+        if( $(this).prop('checked') ){
+            compos.push($(this).val());            
+        }
+    });
+    
+    console.log(compos);
+
+    let params = {
+        'model'  : 'equipment',
+        'method' : 'addcomps',
+        'args'   : compos.toString()
+    };
+
+    console.log(params);
+
+    $.ajax({
+        url: 'index.php',
+        type: 'POST',
+        dataType: 'html',
+        data: params,
+        cache: false, // Appends _={timestamp} to the request query string
+        success: function($dres) {
+
+            /*if( $dres.sts == 0 ){
+
+                let rwc = '';
+
+                $.each($dres.res, function(i, vals) {
+                    
+                    rwc += '<tr id="trCompo'+vals.item+'" idreg="'+vals.item+'">';
+                        rwc += '<td id="tdComps'+i+'" class="text-center">'+vals.item+'</td>';
+                        rwc += '<td>'+vals.descripcion+'</td>';
+                        rwc += '<td class="text-center">'+vals.consec+'</td>';
+                        rwc += '<td class="text-center">'+vals.familia+'</td>';
+                        rwc += '<td class="text-center">'+vals.categoria+'</td>';
+                        rwc += '<td class="text-center">'+vals.acciones+'</td>';
+                    rwc += '</tr>';
+
+                });
+
+            }*/
+
+            destroyTableParam('#tabCompos');
+            $('#tcompos').append($dres);
+            $('#btnCancelModCompo').click();
+            readTableComp();
+            renderDTParam('#tabCompos');
+            
+        }
+    });
+
+});
+
+$(document).on('click','#btnCancelModCompo',function(){
+    $('#frmModalCompo').clearForm();
+    $('#detCompos').html('');
+});
+
+$(document).on('click','.dcomp',function(e){
+    e.preventDefault();
+    if( confirm('¿Desea eliminar este valor de la lista?') ){
+        //let ide = $(this).parent().parent().find('td:eq(0)').text();
+        let ide = $(this).attr('ide');
+        let idc = $('#hidId').val();
+        if( idc != '' ){
+            $('#hidVlsDelComp').val($('#hidVlsDelComp').val()+ide+',');            
+        }
+        destroyTableParam('#tabCompos');
+        $('#trCompo'+ide).remove();
+        readTableComp();
+        setTimeout(() => {
+            renderDTParam('#tabCompos');
+        }, 300);
+    }
+});
