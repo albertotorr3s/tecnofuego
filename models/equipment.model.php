@@ -367,7 +367,7 @@
 
                     foreach ($cps as $kcomp => $vcomp) {
  
-                        $infcomp = array('edo_reg'=>0,'usu_mod'=>$this->seda['idu'],'fec_mod'=>date('Y-m-d H:i:s'),'ip_mod'=>Firewall::ipCatcher());
+                        $infcomp = array('edo_reg'=>1,'usu_mod'=>$this->seda['idu'],'fec_mod'=>date('Y-m-d H:i:s'),'ip_mod'=>Firewall::ipCatcher());
                         $whrcomp = array('id'=>$vcomp);
                         $rspcomp = $this->crud->update($infcomp,BD_PREFI.'components',$whrcomp);
                         unset($infcomp,$whrcomp,$rspcomp);

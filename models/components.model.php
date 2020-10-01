@@ -92,7 +92,6 @@ class components
                         AND ec.idCompo = c.id
                         AND e.id = ec.idEquip
                         AND p.idCategory = ct.id
-                        AND ec.edo_reg <> 0
                         AND cv.idField IN (31,34)";
 
 
