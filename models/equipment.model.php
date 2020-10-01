@@ -366,7 +366,7 @@
                     $cps = explode(',',trim($data->hidVlsDelComp,','));
 
                     foreach ($cps as $kcomp => $vcomp) {
-
+ 
                         $infcomp = array('edo_reg'=>0,'usu_mod'=>$this->seda['idu'],'fec_mod'=>date('Y-m-d H:i:s'),'ip_mod'=>Firewall::ipCatcher());
                         $whrcomp = array('id'=>$vcomp);
                         $rspcomp = $this->crud->update($infcomp,BD_PREFI.'components',$whrcomp);
@@ -374,9 +374,11 @@
 
                         $infcomp2 = array('edo_reg'=>0,'usu_mod'=>$this->seda['idu'],'fec_mod'=>date('Y-m-d H:i:s'),'ip_mod'=>Firewall::ipCatcher());
                         $whrcomp2 = array('idCompo'=>$vcomp,'idEquip'=>$data->hidId);
+                        $rspcomp2 = $this->crud->delete(BD_PREFI.'equip_compos',$whrcomp2);
                         // $whrcomp3 = array('idEquip'=>$data->hidId);
-                        $rspcomp2 = $this->crud->update($infcomp2,BD_PREFI.'equip_compos',$whrcomp2);
                         unset($infcomp2,$whrcomp2,$rspcomp2);
+
+
 
                     }
 
@@ -818,6 +820,7 @@
                         AND cv.idComponent = c.id
                         AND p.idFamily = f.id
                         AND p.idCategory = ct.id
+                        AND c.edo_reg <> 0
                         AND cv.idField IN (31,34)
                         AND c.id IN (".$cla.") ";
 
