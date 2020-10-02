@@ -241,7 +241,6 @@ $(document).on('click','#btnSaveModCompo',function(){
         }
     });
     
-    console.log(compos);
 
     let params = {
         'model'  : 'equipment',
