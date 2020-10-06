@@ -69,10 +69,11 @@ class components
         return $ar['cant'];
 
     }
+    
     // Listar productos y servicios  
     public function listar(array $data)
     {
-
+        
         $sql = "SELECT cy.name CLIENTE, s.name 'PROYECTO/MINA', p.description COMPONENTE, 
                         cv.valField 'SN/CONSEC.', f.label FAMILIA, ct.label CATEGORÍA, e.internalNumber No_EQUIPO,  
                         CASE c.edo_reg 
@@ -92,7 +93,9 @@ class components
                         AND ec.idCompo = c.id
                         AND e.id = ec.idEquip
                         AND p.idCategory = ct.id
-                        AND cv.idField IN (31,34)";
+                        AND cv.idField IN (31,34)
+                        GROUP BY cv.idComponent
+                        HAVING COUNT(1)";
 
 
 

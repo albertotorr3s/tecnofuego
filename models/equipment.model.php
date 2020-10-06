@@ -168,6 +168,7 @@
         // Mostrar datos para editar
         public function editar(int $data){
 
+        
             $sql = "SELECT e.id, e.internalNumber, e.serial, e.typeEquipamentId, e.idModel, 
                         m.valfather idBrand, e.edo_reg, e.siteId, s.companyId, e.horometer, 
                         e.detectionSystem, e.extinctionSystem
@@ -216,6 +217,7 @@
             array_push($dpc, ['kpa'=>1,'val'=>$data,'typ'=>'int']);
             array_push($dpc, ['kpa'=>2,'val'=>1,'typ'=>'int']);
             $awc = $this->crud->select_group($sqlComp, count($dpc), $dpc, 'arra');
+           
             $lco = '';
 
             foreach ($awc['res'] as $kc => $vc) {
@@ -224,6 +226,8 @@
 
             $d['data']['lco'] = trim($lco,',');
             $d['data']['rps'] = self::lstrepos($data);
+
+            var_dump($awc);
 
             $this->rndr->setData($d);
             echo $this->rndr->rendertpl();
@@ -373,11 +377,10 @@
                         unset($infcomp,$whrcomp,$rspcomp);
 
                         $infcomp2 = array('edo_reg'=>0,'usu_mod'=>$this->seda['idu'],'fec_mod'=>date('Y-m-d H:i:s'),'ip_mod'=>Firewall::ipCatcher());
-                        $whrcomp2 = array('idCompo'=>$vcomp,'idEquip'=>$data->hidId);
+                        $whrcomp2 = array('idCompo'=>$vcomp,'idEquip'=>null);
                         $rspcomp2 = $this->crud->delete(BD_PREFI.'equip_compos',$whrcomp2);
                         // $whrcomp3 = array('idEquip'=>$data->hidId);
                         unset($infcomp2,$whrcomp2,$rspcomp2);
-
 
 
                     }

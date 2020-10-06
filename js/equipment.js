@@ -43,6 +43,7 @@ function defaMethod(){
 
 function lcomps(){
 
+    console.log($('#hidLstComp').val());
     destroyTableParam('#tabCompos');
 
     let pcomps = {

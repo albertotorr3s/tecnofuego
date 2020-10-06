@@ -1,6 +1,6 @@
 <?php
 
-    class mmtos {
+    class mmtos{
         
         public function __construct(array $res){
         	$this->clstr = $res['cleanstr'];
@@ -83,7 +83,6 @@
 
         // Lanzar formulario de nuevo registro
         public function nuevo(int $data){
-
             $lbl = self::eqlabel($data);
 
             $d = array(
@@ -105,7 +104,32 @@
                 ),
                 'file' => 'html/mmtos/nuevo.html'
             );
+            
+        
+        
+            $sqlComp = "SELECT ec.idCompo
+                        FROM tec_equip_compos ec
+                        WHERE ec.idEquip = ?
+                            AND ec.edo_reg = ?;";
 
+            $dpc = array();
+            array_push($dpc, ['kpa'=>1,'val'=>$lbl['ideq'],'typ'=>'int']);
+            array_push($dpc, ['kpa'=>2,'val'=>1,'typ'=>'int']);
+            print_r($dpc);
+            $awc = $this->crud->select_group($sqlComp, count($dpc), $dpc, 'arra');
+            $lco = '';
+
+            foreach ($awc['res'] as $kc => $vc) {
+                $lco .= $vc['idCompo'].',';
+            }
+
+            $d['data']['lco'] = trim($lco,',');
+            $d['data']['rps'] = self::lstrepos($lbl['ideq']);
+
+            var_dump($awc);
+
+
+            
             $this->rndr->setData($d);
             echo $this->rndr->rendertpl();
 
@@ -113,7 +137,6 @@
 
         // Mostrar datos para editar
         public function editar(int $data){
-
             $sql = "SELECT c.idcateg id, c.categoria, c.edo_reg
                     FROM ".BD_PREFI."categenlaces c
                     WHERE c.idcateg = ?
