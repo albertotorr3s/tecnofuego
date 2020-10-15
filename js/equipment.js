@@ -43,7 +43,6 @@ function defaMethod(){
 
 function lcomps(){
 
-    console.log($('#hidLstComp').val());
     destroyTableParam('#tabCompos');
 
     let pcomps = {
@@ -242,6 +241,7 @@ $(document).on('click','#btnSaveModCompo',function(){
         }
     });
     
+    
 
     let params = {
         'model'  : 'equipment',
@@ -249,7 +249,7 @@ $(document).on('click','#btnSaveModCompo',function(){
         'args'   : compos.toString()
     };
 
-    console.log(params);
+    
 
     $.ajax({
         url: 'index.php',
@@ -277,7 +277,6 @@ $(document).on('click','#btnSaveModCompo',function(){
                 });
 
             }*/
-
             destroyTableParam('#tabCompos');
             $('#tcompos').append($dres);
             $('#btnCancelModCompo').click();
@@ -322,7 +321,6 @@ function readTableComp(){
             'idcomp':$(this).attr('idreg')
         });
         $('#hidVlsComp').val(JSON.stringify(comps));
-        console.log(comps);
     });
 
     $(".spanComp").each(function(i) {
@@ -474,7 +472,6 @@ function readTableReps(){
             'vlrep' : $(this).find('td:eq(0) input:eq(3)').val()
         });
         $('#hidVlsReps').val(JSON.stringify(repos));
-        console.log(repos);
     });
 
     $(".spanRepu").each(function(i) {

@@ -43,16 +43,18 @@
 
 					<form id="mmtos" name="mmtos" action="guardar">
 
-						<input type="hidden" id="hidId" name="hidId">
-						<input type="hidden" id="hidIdEquip" name="hidIdEquip" value="{idequip}">
-						<input type="hidden" id="hidIdSite" name="hidIdSite" value="{idsite}">
-						<input type="hidden" name="hidVlsTecs" id="hidVlsTecs">
-						<input type="hidden" name="hidVlsComps" id="hidVlsComps">
-						<input type="hidden" id="hidVlsAddComp" name="hidVlsAddComp" value="">
-						<input type="hidden" id="hidVlsDelComp" name="hidVlsDelComp" value="">
-						<!-- Control de repuestos -->
-						<input type="hidden" id="hidVlsAddRep" name="hidVlsAddRep" value="">
+						<input type="hidden" id="hidId" name="hidId" value="{id}">
+						<input type="hidden" id="hidIdEquip" name="hidIdEquip" value="{hidIdEquip}">
+						<input type="hidden" id="hidIdProy" name="hidIdProy" value="{idsite}">
+						<input type="hidden" id="hidIdModel" name="hidIdModel" value="{idModel}">
+						<input type="hidden" id="hidVlsComp" name="hidVlsComp" value="">
+						<input type="hidden" id="hidLstComp" name="hidLstComp" value="{lco}">
+						<input type="hidden" id="hidVlsReps" name="hidVlsReps" value="">
+						<input type="hidden" id="hidVlsTecs" name="hidVlsTecs" value="">
 						<input type="hidden" id="hidVlsDelRep" name="hidVlsDelRep" value="">
+						<input type="hidden" id="hidVlsDelComp" name="hidVlsDelComp" value="">
+
+					
 
 						<ul class="nav nav-tabs" id="myTab" role="tablist">
 						  <li class="nav-item">
@@ -250,7 +252,7 @@
 									<table id="tabCompos" class="table table-hover table-striped newrone-table">
 										<thead>
 											<tr>
-												<th class="text-center" width="5%">
+												<th width="5%">
 													Ítem
 												</th>
 												<th class="text-center" width="40%">
@@ -276,126 +278,96 @@
 								</div>
 	
 							</div>
-	
-							<br>
-	
 
 						  </div>
 
 						  <div class="tab-pane fade" id="prtsrv" role="tabpanel" aria-labelledby="prtsrv-tab">
 							
-							<div class="row mt-3">
+							<br>
 
-								<div class="col-lg-2">
-									<div class="form-group">
-										<label class="form-control-label">Parte número <span class="text-danger">*</span></label>
-										<input type="text" id="txtParNum" name="txtParNum" placeholder="Parte número" class="form-control">
-										<input type="hidden" name="hidValUnit" id="hidValUnit">
-										<input type="hidden" name="hidElemento" id="hidElemento">
-										<input type="hidden" name="hidCurIdCom" id="hidCurIdCom">
-										<input type="hidden" name="hidCurLinCom" id="hidCurLinCom">
-									</div>
+						<div class="row">
+
+							<div class="col-lg-3">
+								<div class="form-group">
+									<label class="form-control-label">Familias <span class="text-danger">*</span></label>
+									<select id="slcFamilias" name="slcFamilias" class="form-control">{familia}</select>
+									<input type="hidden" name="hidIdTrRep" id="hidIdTrRep">
+									<input type="hidden" name="hidIdTrEqRep" id="hidIdTrEqRep">
 								</div>
-
-								<div class="col-lg-2">
-									<div class="form-group">
-										<label class="form-control-label">Tipo parte <span class="text-danger">*</span></label>
-										<select id="slcTipo" name="slcTipo" class="form-control">{partype}</select>
-									</div>
-								</div>
-
-								<div class="col-lg-4">
-									<div class="form-group">
-										<label class="form-control-label">Familia <span class="text-danger">*</span></label>
-										<select id="slcFamilia" name="slcFamilia" class="form-control">{familia}</select>
-									</div>
-								</div>
-
-								<div class="col-lg-4">
-									<div class="form-group">
-										<label class="form-control-label">Categoría <span class="text-danger">*</span></label>
-										<select id="slcCategoria" name="slcCategoria" class="form-control">{categoria}</select>
-									</div>
-								</div>
-
 							</div>
-							
-							<div class="row">
-								
-								<div class="col-lg-9">
-									<div class="form-group">
-										<label class="form-control-label">Parte o servicio <span class="text-danger">*</span></label>
-										<select id="slcElemento" name="slcElemento" class="form-control"></select>
-									</div>
+			
+							<div class="col-lg-3">
+								<div class="form-group">
+									<label class="form-control-label">Categorías <span class="text-danger">*</span></label>
+									<select id="slcCategorias" name="slcCategorias" class="form-control">{categoria}</select>
 								</div>
-
-								<div class="col-lg-2">
-									<div class="form-group">
-										<label class="form-control-label">Cantidad <span class="text-danger">*</span></label>
-										<input type="text" id="txtCantidad" name="txtCantidad" placeholder="Cantidad" class="form-control">
-									</div>
-								</div>
-
-								<div class="col-lg-1">
-									<div class="form-group">
-										<label class="form-control-label">&nbsp;</label>
-										<button id="btnAddEle" type="button" class="btn btn-info form-control">
-											<i class="fa fa-plus"></i>
-										</button>
-									</div>
-								</div>
-
 							</div>
 
-							<div class="row mt-3">
-
-								<div class="col-lg-12">
-
-									<table id="tabPrecios" class="table table-hover table-striped newrone-table">
-										<thead>
-											<tr>
-												<th class="text-center" width="45%">
-													Descripción
-												</th>
-												<th class="text-center" width="10%">
-													Cant.
-												</th>
-												<th class="text-center" width="10%">
-													P/N
-												</th>
-												<th class="text-center" width="15%">
-													V/U (USD)
-												</th>
-												<th class="text-center" width="15%">
-													Total (USD)
-												</th>
-												<th class="text-center" width="5%">
-													Acciones
-												</th>
-											</tr>
-										</thead>
-										<tbody id="tpartes"></tbody>
-									</table>
-
+							<div class="col-lg-6">
+								<div class="form-group">
+									<label class="form-control-label">Repuesto <span class="text-danger">*</span></label>
+									<select id="slcRepuesto" name="slcRepuesto" class="form-control"></select>
 								</div>
-
 							</div>
 
-							<div class="row mt-3">
+						</div>
 
-								<div class="col-lg-12">
+						<div class="row" id="rboxes"></div>
 
-									<table class="table table-borderless">
+						<div class="row">
+							<div class="col-lg-1 offset-lg-10">
+								<div class="form-group">
+									<button id="btnCnclRep" type="button" class="btn btn-danger form-control" title="Cancelar">
+										<i class="fa fa-times"></i>
+									</button>
+								</div>
+							</div>
+							<div class="col-lg-1">
+								<div class="form-group">
+									<button id="btnAddRep" type="button" class="btn btn-info form-control" title="Agregar repuesto">
+										<i class="fa fa-plus"></i>
+									</button>
+								</div>
+							</div>
+						</div>
+
+						<br>
+
+						<br>
+
+						<div class="row">
+
+							<div class="col-lg-12">
+
+								<table id="tabRepos" class="table table-hover table-striped newrone-table">
+									<thead>
 										<tr>
-											<td width="75%" class="text-right"><span class="font-weight-bold text-primary">TOTALES</span></td>
-											<td width="15%" class="text-right bg-light font-weight-bold">$ <span id="totales">0</span></td>
-											<td width="10%">&nbsp;</td>
+											<th class="text-center" width="10%">
+												Ítem
+											</th>
+											<th class="text-center" width="40%">
+												Descripción
+											</th>
+											<th class="text-center" width="20%">
+												Familia
+											</th>
+											<th class="text-center" width="20%">
+												Categoría
+											</th>
+											<th class="text-center" width="10%">
+												Acciones
+											</th>
 										</tr>
-									</table>
-								
-								</div>
-								
+									</thead>
+									<tbody id="detRepus">{rps}</tbody>
+								</table>
+
 							</div>
+
+						</div>
+
+						<br>
+
 							
 						  </div>
 
@@ -410,10 +382,9 @@
 			</div>
 
 		</div>
-
 		<div class="card-footer text-right">
 
-			<button id="btnSaveAct" type="button" class="btn btn-success" model="mmtos" method="guardar" form="0" target="module-cont">
+			<button id="btnSaveMmto" type="button" class="btn btn-success" model="mmtos" method="guardar" form="0" target="module-cont">
 				Guardar &nbsp;&nbsp;<i class="fa fa-save"></i>
 			</button>
 
@@ -424,6 +395,7 @@
 			</button>
 
 		</div>
+
 
 	</div>
 

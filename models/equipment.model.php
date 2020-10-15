@@ -227,7 +227,6 @@
             $d['data']['lco'] = trim($lco,',');
             $d['data']['rps'] = self::lstrepos($data);
 
-            var_dump($awc);
 
             $this->rndr->setData($d);
             echo $this->rndr->rendertpl();
@@ -377,7 +376,7 @@
                         unset($infcomp,$whrcomp,$rspcomp);
 
                         $infcomp2 = array('edo_reg'=>0,'usu_mod'=>$this->seda['idu'],'fec_mod'=>date('Y-m-d H:i:s'),'ip_mod'=>Firewall::ipCatcher());
-                        $whrcomp2 = array('idCompo'=>$vcomp,'idEquip'=>null);
+                        $whrcomp2 = array('idCompo'=>$vcomp,'idEquip'=>$data->hidId);
                         $rspcomp2 = $this->crud->delete(BD_PREFI.'equip_compos',$whrcomp2);
                         // $whrcomp3 = array('idEquip'=>$data->hidId);
                         unset($infcomp2,$whrcomp2,$rspcomp2);
@@ -812,6 +811,7 @@
 
         // Componentes seleccionados 
         public function addcomps(string $data){
+            
 
             $arr = explode(",", $data);
             $cla = implode(',', array_fill(0, count($arr), '?'));

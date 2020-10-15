@@ -112,7 +112,7 @@ $(document).on('change','#slcClienteMod',function(){
 
 // Acciones boton elegir registro para nuevo mantenimiento
 $(document).on('click','a[action=sel]',function(e){
-
+ 
   e.preventDefault();
 
   $('#btnCancelModEquip').click();
@@ -120,7 +120,6 @@ $(document).on('click','a[action=sel]',function(e){
   let met = $(this).attr('href');
   let arg = $(this).parent().parent().find('td:eq(1)').text();
   
-
   setTimeout(function(){
     loadNew(met,arg);
   }, 200);
@@ -204,10 +203,12 @@ var flt = 0;
 // Agregar técnico
 $(document).on('click','#btnAddTec',function(){
 
+
   destroyTableParam('#tabTecs');
 
   let idt = $('#slcTecnico').val(), idf = $('#hidCurLinTec').val(), cmb = $("#slcTecnico option:selected").text().split("-"), 
       ced = cmb[1], nom = cmb[0], gru = $('#txtGrupo').val(), por = $('#txtPorPar').val();
+
 
   if( ced.length != 0 && nom.length != 0 && gru.length != 0 && por.length != 0 ){
 
@@ -304,7 +305,6 @@ function readTabTecs(){
           'portec':$(this).find('td:eq(3)').text()
       });
       $('#hidVlsTecs').val(JSON.stringify(tecs));
-      console.log(tecs);
   });
 
 }
@@ -529,6 +529,27 @@ function cleanComps(){
 }
 
 // Leer datos de la tabla de componentes, repuestos y servicios
+function readTabTecs(){
+
+  let comps = [];
+  let vtot = 0;
+
+  $("#tpartes tr").each(function(i) {
+    comps.push({ 
+        'idecom':$(this).find('td:eq(0) input:eq(1)').val(),
+        'cancom':$(this).find('td:eq(1)').text(),
+        'vuncom':$(this).find('td:eq(3)').text().replace("$ ",""),
+        'vtocom':$(this).find('td:eq(4)').text().replace("$ ","")
+    });
+    vtot = vtot + parseFloat($(this).find('td:eq(4)').text().replace("$ ",""));
+    $('#hidVlsComps').val(JSON.stringify(comps));
+  });
+
+  $('#totales').html(vtot);
+
+}
+
+// Leer datos de la tabla de componentes, repuestos y servicios
 function readTabComps(){
 
   let comps = [];
@@ -543,7 +564,6 @@ function readTabComps(){
     });
     vtot = vtot + parseFloat($(this).find('td:eq(4)').text().replace("$ ",""));
     $('#hidVlsComps').val(JSON.stringify(comps));
-    console.log(comps);
   });
 
   $('#totales').html(vtot);
@@ -731,6 +751,7 @@ $(document).on('focus','.rep-fld',function(){
 $(document).on('click','#btnSaveAct',function(){
 
   let chk = false;
+  alert($(this).val());
 
   $('.chk-compo').each(function() {
     if( $(this).prop('checked') ) {
@@ -756,3 +777,222 @@ $(document).on('click','#btnSaveAct',function(){
   }
 
 });
+
+$(document).on('click','#btnSaveMmto',function(){
+
+  let tecs = [];
+
+  $("#tabtecs tr").each(function(i) {
+    tecs.push({ 
+        'idetec':$(this).find('td:eq(0) input:eq(1)').val(),
+        'portec':$(this).find('td:eq(3)').text()
+    });
+    $('#hidVlsTecs').val(JSON.stringify(tecs));
+  });
+
+  readTableComp();
+  readTableReps();
+
+
+  let cont = 0;
+  let txtmsgvalidate = [];
+  if(!$('#txtFecIniMmto').val()){
+    cont = 1;
+    txtmsgvalidate.push({
+      data:"fecha de inicio"
+    });
+    valid(txtmsgvalidate,$('#txtFecIniMmto'));
+  } 
+  if(!$('#txtHoraInicio').val()){
+    cont = 1;
+    txtmsgvalidate.push({
+      data:"hora inicio"
+    });
+    valid(txtmsgvalidate,$('#txtHoraInicio'));
+  } 
+  if(!$('#txtFecFinMmto').val()){
+    cont = 1;
+    txtmsgvalidate.push({
+      data:"fecha fin"
+    });
+    valid(txtmsgvalidate,$('#txtFecFinMmto'));
+  } 
+  if(!$('#txtHoraFinal').val()){
+    cont = 1;
+    txtmsgvalidate.push({
+      data:"hora fin"
+    });
+    valid(txtmsgvalidate,$('#txtHoraFinal'));
+  } 
+  if(!$('#txtHoroIni').val()){
+    cont = 1;
+    txtmsgvalidate.push({
+      data:"horometro inicial"
+    });
+    valid(txtmsgvalidate,$('#txtHoroIni'));
+  } 
+  if(!$('#txtHoroFin').val()){
+    cont = 1;
+    txtmsgvalidate.push({
+      data:"horometro final"
+    });
+    valid(txtmsgvalidate,$('#txtHoroFin'));
+  } 
+  if(!$('#slcLocal').val()){
+    cont = 1;
+    txtmsgvalidate.push({
+      data:"Localizaciones"
+    });
+    valid(txtmsgvalidate,$('#slcLocal'));
+  } 
+  if(!$('#hidVlsTecs').val()){
+    cont = 1;
+    txtmsgvalidate.push({
+      data:"Tecnicos"
+    });
+    valid(txtmsgvalidate,$('#slcTecnico'));
+  } 
+
+    if(cont == 0){
+      let idEquip = $('#hidIdEquip').val() ;
+      let hidVlsTecs = $('#hidVlsTecs').val();
+      let hidVlsComp = $('#hidVlsComp').val();
+      let hidVlsReps = $('#hidVlsReps').val();
+      let hidVlsDelComp = $('#hidVlsDelComp').val();
+      let hidVlsDelRep = $('#hidVlsDelRep').val();
+      let txtFecIniMmto = $('#txtFecIniMmto').val();
+      let txtHoraInicio = $('#txtHoraInicio').val();
+      let txtFecFinMmto = $('#txtFecFinMmto').val();
+      let txtHoraFinal = $('#txtHoraFinal').val();
+      let txtHoroIni = $('#txtHoroIni').val();
+      let txtHoroFin = $('#txtHoroFin').val();
+      let slcLocal = $('#slcLocal').val(); 
+      let tarObservActiv = $('#tarObservActiv').val();
+    
+      
+      let args = {
+        'idEquip':idEquip,
+        'hidVlsTecs':hidVlsTecs,
+        'hidVlsComp':hidVlsComp,
+        'hidVlsReps':hidVlsReps,
+        'hidVlsDelComp':hidVlsDelComp,
+        'hidVlsDelRep':hidVlsDelRep,
+        'txtFecIniMmto' : txtFecIniMmto,
+        'txtHoraInicio' : txtHoraInicio,
+        'txtFecFinMmto' : txtFecFinMmto,
+        'txtHoraFinal' : txtHoraFinal,
+        'txtHoroIni' : txtHoroIni,
+        'txtHoroFin' : txtHoroFin,
+        'slcLocal' : slcLocal,
+        'tarObservActiv' : tarObservActiv
+      };
+    
+      let params = {
+        'model'  : 'mmtos',
+        'method' : 'guardar',
+        'args'   :  args
+      };
+    
+      $.ajax({
+          url: 'index.php',
+          type: 'POST',
+          dataType: 'html',
+          data: params,
+          cache: false, // Appends _={timestamp} to the request query string
+          success: function($dres) {
+            console.log($dres);
+            let conf = {
+              'tarmsg'  : 'contMsg',
+              'tarow'   : 'rowMsg',
+              'msg'     : 'Registro exitoso.'
+            };
+            alertCustom(conf);
+              /*if( $dres.sts == 0 ){
+    
+                  let rwc = '';
+    
+                  $.each($dres.res, function(i, vals) {
+                      
+                      rwc += '<tr id="trCompo'+vals.item+'" idreg="'+vals.item+'">';
+                          rwc += '<td id="tdComps'+i+'" class="text-center">'+vals.item+'</td>';
+                          rwc += '<td>'+vals.descripcion+'</td>';
+                          rwc += '<td class="text-center">'+vals.consec+'</td>';
+                          rwc += '<td class="text-center">'+vals.familia+'</td>';
+                          rwc += '<td class="text-center">'+vals.categoria+'</td>';
+                          rwc += '<td class="text-center">'+vals.acciones+'</td>';
+                      rwc += '</tr>';
+    
+                  });
+    
+              }*/
+    
+              
+          }
+      });
+    }
+});
+
+function valid(txtmsgvalidate,valor2){
+    
+  let conf = {
+    'tarmsg'  : 'contMsg',
+    'tarow'   : 'rowMsg',
+    'msg'     : 'Faltan campos por diligenciar para agregar el repuesto.'
+  };
+  if(txtmsgvalidate){
+    conf.msg = "Faltan campos por llenar";
+    alertCustom(conf);
+    valor2.addClass('is-invalid');
+    var lbl = valor2.parent().find('label').text();
+    valor2.parent().append('<div class="invalid-feedback">Debe diligenciar el campo '+lbl.slice(0, -2)+' </div>');
+  }
+}
+$(document).on('focus','.is-invalid',function(){
+
+    if( $(this).hasClass('is-invalid') ){
+        $(this).removeClass('is-invalid');
+    }
+
+});
+function readTableComp(){
+
+  let comps = [];
+  let filas = 1;
+
+  $("#tcompos tr").each(function(i) {
+      comps.push({ 
+          'idcomp':$(this).attr('idreg')
+      });
+      $('#hidVlsComp').val(JSON.stringify(comps));
+      
+  });
+ 
+  $(".spanComp").each(function(i) {
+      $(this).html(filas);
+      filas++;
+  });
+
+}
+function readTableReps(){
+
+  let repos = [];
+  let firep = 1;
+
+  $("#detRepus tr").each(function(i) {
+      repos.push({ 
+          'idr'   : $(this).find('td:eq(0) input:eq(4)').val(), 
+          'idrep' : $(this).find('td:eq(0) input:eq(2)').val(), 
+          'vlrep' : $(this).find('td:eq(0) input:eq(3)').val()
+      });
+      $('#hidVlsReps').val(JSON.stringify(repos));
+  });
+
+  $(".spanRepu").each(function(i) {
+      $(this).html(firep);
+      firep++;
+  });
+
+  fila = firep;
+
+}
+

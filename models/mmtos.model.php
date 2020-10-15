@@ -89,7 +89,7 @@
                 'data' => array(
                     'header'	    =>  $this->rndr->renderHeader('Gestionar mantenimientos'),
                     'footer'        =>  $this->rndr->renderFooter(EMP_NAME,YEARCOPY),
-                    'idequip'       =>  $lbl['ideq'],
+                    'hidIdEquip'       =>  $lbl['ideq'],
                     'idsite'        =>  $lbl['sid'],
                     'eqlabel'       =>  $lbl['lbl'],
                     'horomet'       =>  $lbl['hor'],
@@ -115,7 +115,7 @@
             $dpc = array();
             array_push($dpc, ['kpa'=>1,'val'=>$lbl['ideq'],'typ'=>'int']);
             array_push($dpc, ['kpa'=>2,'val'=>1,'typ'=>'int']);
-            print_r($dpc);
+            
             $awc = $this->crud->select_group($sqlComp, count($dpc), $dpc, 'arra');
             $lco = '';
 
@@ -126,7 +126,6 @@
             $d['data']['lco'] = trim($lco,',');
             $d['data']['rps'] = self::lstrepos($lbl['ideq']);
 
-            var_dump($awc);
 
 
             
@@ -165,21 +164,20 @@
         }
 
         // Acción de guardar
-        public function guardar(){
+        public function guardar(array $data){
 
-            $data = json_decode($_POST['args']);
-
+    
             $info = array(
-                'idEquip'       =>  $data->hidIdEquip,
+                'idEquip'       =>  $data['idEquip'],
                 'idTypeAct'     =>  2,
-                'idLocation'    =>  $data->slcLocal,
-                'startDate'     =>  $data->txtFecIniMmto,
-                'endDate'       =>  $data->txtFecFinMmto,
-                'startHour'     =>  $data->txtHoraInicio,
-                'endHour'       =>  $data->txtHoraFinal,
-                'horometerIni'  =>  $data->txtHoroIni,
-                'horometerEnd'  =>  $data->txtHoroFin,
-                'observaciones' =>  $data->tarObservActiv,
+                'idLocation'    =>  $data['slcLocal'],
+                'startDate'     =>  $data['txtFecIniMmto'],
+                'endDate'       =>  $data['txtFecFinMmto'],
+                'startHour'     =>  $data['txtHoraInicio'],
+                'endHour'       =>  $data['txtHoraFinal'],
+                'horometerIni'  =>  $data['txtHoroIni'],
+                'horometerEnd'  =>  $data['txtHoroFin'],
+                'observaciones' =>  $data['tarObservActiv'],
                 'edo_reg'       =>  1
             );
 
@@ -202,23 +200,28 @@
                 $resp = $this->crud->insert($info,BD_PREFI.'activities');
 
             }
+            print_r($resp);
 
             if( $resp['rta'] == 'OK' ){
+
 
                 $cls = 'alert-success';
                 $msg = 'Información guardada correctamente. &nbsp;&nbsp;<i class="fa fa-check" aria-hidden="true"></i>';
 
                 // Valores de los técnicos que intervienen en la actividad
-                $dtechs = json_decode($data->hidVlsTecs, true);
+                $dtechs = json_decode($data['hidVlsTecs'], true);
+                
 
                 foreach ($dtechs as $kt => $vt) {
 
                     $inft = array(
-                        'idactiv'   =>  (empty($data->hidId)) ? $resp['lstId'] : $data->hidId,
+                        'idactiv'   =>  (empty($data['hidId'])) ? $resp['lstId'] : $data['hidId'],
                         'idtech'    =>  $vt['idetec'],
                         'parper'    =>  $vt['portec'],
                         'edo_reg'   =>  1
                     );
+
+                    
 
                     if( strlen(trim($vt['ide'])) > 0 ){
 
@@ -239,43 +242,146 @@
                         $rt = $this->crud->insert($inft,BD_PREFI.'activ_techs');
         
                     }
-                    
+                    print_r($rt);
                 }
 
-                // Valores de los componentes, repuestos y servicios adicionados a la actividad
-                $dcomp = json_decode($data->hidVlsComps, true);
+                // Insertar componentes
+                $comps = json_decode($data['hidVlsComp'],true);
 
-                foreach ($dcomp as $kc => $vc) {
-
+                                
+                foreach ($comps as $kc => $vc) {
+                    
                     $infc = array(
-                        'idactiv'       =>  (empty($data->hidId)) ? $resp['lstId'] : $data->hidId,
-                        'idpartserv'    =>  $vc['idecom'],
-                        'vunit'         =>  $vc['vuncom'],
-                        'cant'          =>  $vc['cancom'],
-                        'vtotal'        =>  $vc['vtocom'],
-                        'edo_reg'       =>  1
+                        'idEquip'   =>  (empty($data['idEquip'])) ? $resp['lstId'] : $data['idEquip'],
+                        'idCompo'   =>  $vc['idcomp'],
+                        'edo_reg'   =>  1
                     );
 
-                    if( strlen(trim($vc['ide'])) > 0 ){
+                    $sqlC = "SELECT COUNT(*) cant
+                            FROM tec_equip_compos ec
+                            WHERE ec.idEquip = ?
+                                AND ec.idCompo = ?
+                            LIMIT 1;";
+
+                    $dpc = array();
+                    array_push($dpc, ['kpa'=>1,'val'=>$infc['idEquip'],'typ'=>'int']);
+                    array_push($dpc, ['kpa'=>2,'val'=>$infc['idCompo'],'typ'=>'int']);
+                    
+                  
+                    $awc = $this->crud->select_group($sqlC, count($dpc), $dpc, 'arra');
+                   
+                    
+
+                    if( $awc['res'][0]['cant'] > 0 ){
 
                         $infc['usu_mod'] = $this->seda['idu'];
                         $infc['fec_mod'] = date('Y-m-d H:i:s');
                         $infc['ip_mod']  = Firewall::ipCatcher();
-        
-                        $wc = array('id'=>$vc['ide']);
-        
-                        $rc = $this->crud->update($infc,BD_PREFI.'activ_part_serv',$wc);
-        
+
+                        $whrc = array('idEquip'=>$infc['idEquip'],'idCompo'=>$infc['idCompo']);
+
+                        $rc = $this->crud->update($infc,BD_PREFI.'equip_compos',$whrc);
+
                     } else {
-        
+
                         $infc['usu_crea'] = $this->seda['idu'];
                         $infc['fec_crea'] = date('Y-m-d H:i:s');
                         $infc['ip_crea']  = Firewall::ipCatcher();
-        
-                        $rc = $this->crud->insert($infc,BD_PREFI.'activ_part_serv');
-        
+
+                        $rc = $this->crud->insert($infc,BD_PREFI.'equip_compos');
+
                     }
                     
+                    print_r($rc);
+                    unset($infc,$whrc,$rc);
+
+                    // Asingar componentes
+                    $inf = array('edo_reg'=>2);
+                    $whr = array('id'=>$vc['idcomp']);
+                    $rsp = $this->crud->update($inf,BD_PREFI.'components',$whr);
+                    unset($inf,$whr,$rsp);
+
+                }
+                // Insertar repuestos
+                
+                $repos = json_decode($data['hidVlsReps'],true);
+
+                foreach ($repos as $kr => $vr) {
+
+                    $infr = array(
+                        'idEquip'   =>  (empty($data['idEquip'])) ? $resp['lstId'] : $data['idEquip'],
+                        'idRepo'    =>  $vr['idrep'],
+                        'repvalues' =>  $vr['vlrep'],
+                        'edo_reg'   =>  1
+                    );
+
+                    if( strlen($vr['idr']) > 0 ){
+
+                        $infr['usu_mod'] = $this->seda['idu'];
+                        $infr['fec_mod'] = date('Y-m-d H:i:s');
+                        $infr['ip_mod']  = Firewall::ipCatcher();
+        
+                        $whrr = array('idEqRep'=>$vr['idr']);
+        
+                        $rr = $this->crud->update($infr,BD_PREFI.'equip_repos',$whrr);
+        
+                    } else {
+        
+                        $infr['usu_crea'] = $this->seda['idu'];
+                        $infr['fec_crea'] = date('Y-m-d H:i:s');
+                        $infr['ip_crea']  = Firewall::ipCatcher();
+        
+                        $rr = $this->crud->insert($infr,BD_PREFI.'equip_repos');
+        
+                    }
+                    print_r($rr);
+                    unset($infr,$whrr,$rr);
+                    
+                }
+                // Eliminar componentes
+
+
+                if( strlen($data['hidVlsDelComp']) > 0 ){
+
+                    
+
+                    $cps = explode(',',trim($data['hidVlsDelComp'],','));
+
+
+                    foreach ($cps as $kcomp => $vcomp) {
+ 
+                        $infcomp = array('edo_reg'=>1,'usu_mod'=>$this->seda['idu'],'fec_mod'=>date('Y-m-d H:i:s'),'ip_mod'=>Firewall::ipCatcher());
+                        $whrcomp = array('id'=>$vcomp);
+                        $rspcomp = $this->crud->update($infcomp,BD_PREFI.'components',$whrcomp);
+                        unset($infcomp,$whrcomp,$rspcomp);
+
+                        $infcomp2 = array('edo_reg'=>0,'usu_mod'=>$this->seda['idu'],'fec_mod'=>date('Y-m-d H:i:s'),'ip_mod'=>Firewall::ipCatcher());
+                        $whrcomp2 = array('idCompo'=>$vcomp,'idEquip'=>$data['idEquip']);
+                        $rspcomp2 = $this->crud->delete(BD_PREFI.'equip_compos',$whrcomp2);
+                        // $whrcomp3 = array('idEquip'=>$data->hidId);
+                        unset($infcomp2,$whrcomp2,$rspcomp2);
+
+
+                    }
+                    print_r($rspcomp2);
+
+                }
+                print_r($data['hidVlsDelRep']);
+                // Eliminar repuestos
+                if( strlen($data['hidVlsDelRep']) > 0 ){
+
+                    
+                    
+                    $rps = explode(',',trim($data['hidVlsDelRep'],','));
+
+                    foreach ($rps as $k => $v) {
+                        $inf = array('edo_reg'=>'0','usu_mod'=>$this->seda['idu'],'fec_mod'=>date('Y-m-d H:i:s'),'ip_mod'=>Firewall::ipCatcher());
+                        $whr = array('idEqRep'=>$v);
+                        $rsp = $this->crud->update($inf,BD_PREFI.'equip_repos',$whr);
+                        unset($inf,$whr,$rsp);
+                    }
+                    print_r($rsp);
+
                 }
 
             } else {
@@ -293,8 +399,8 @@
                 'file' => 'html/mmtos/respsave.html'
             );
 
+
             $this->rndr->setData($d);
-            echo $this->rndr->rendertpl();
 
         }
 
@@ -1089,6 +1195,105 @@
             
             echo $fbox;
 
+        }
+        public function lstrepos(int $equip){
+
+            $sql = "SELECT er.idEqRep, er.idEquip, er.idRepo repu, p.description lrep, p.idFamily fami, f.label lfam, 
+                        p.idCategory cats, c.label lcat, er.repvalues
+                    FROM tec_equip_repos er, tec_parts p, tec_valists f, tec_valists c
+                    WHERE er.idRepo = p.id
+                        AND p.idFamily = f.id
+                        AND p.idCategory = c.id
+                        AND er.idEquip = ?
+                        AND er.edo_reg = ?;";
+                    
+            $dp = array();
+            array_push($dp, ['kpa'=>1,'val'=>$equip,'typ'=>'int']);
+            array_push($dp, ['kpa'=>2,'val'=>1,'typ'=>'int']);
+            $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
+            $ar = $aw['res'];
+            $tr = '';
+            $item = 1;
+            
+            foreach ($ar as $k => $v) {
+
+                $btns = '<button class="btn btn-info btn-sm edit-dty-rep" type="button" idfila="'.$k.'" idx="'.$v['idEqRep'].'"><i class="fa fa-pencil"></i></button>&nbsp;&nbsp;';
+		        $btns .= '<button class="btn btn-danger btn-sm dele-dty-rep" type="button" idfila="'.$k.'" idx="'.$v['idEqRep'].'"><i class="fa fa-times"></i></button>';
+                
+                $hids = '<input type="hidden" name="hidFami'.$k.'" id="hidFami'.$k.'" value="'.$v['fami'].'">';
+                $hids .= '<input type="hidden" name="hidCats'.$k.'" id="hidCats'.$k.'" value="'.$v['cats'].'">';
+                $hids .= '<input type="hidden" name="hidRepu'.$k.'" id="hidRepu'.$k.'" value="'.$v['repu'].'">';
+                $hids .= "<input type='hidden' name='hidVals".$k."' id='hidVals".$k."' value='".$v['repvalues']."'>";
+                $hids .= "<input type='hidden' name='hididEqRep".$k."' id='hididEqRep".$k."' value='".$v['idEqRep']."'>";
+                
+                $tr .= '<tr id="tr'.$k.'">';
+                    //$tr .= '<td id="tdItem'.$k.'" class="text-center">'.$hids.$v['repu'].'</td>';
+                    $tr .= '<td id="tdItem'.$k.'" class="text-center">'.$hids.'<span class="spanRepu">'.$item.'</span></td>';
+                    $tr .= '<td id="tdRepu'.$k.'">'.$v['lrep'].'</td>';
+                    $tr .= '<td id="tdFami'.$k.'" class="text-center">'.$v['lfam'].'</td>';
+                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['lcat'].'</td>';
+                    $tr .= '<td class="text-center">'.$btns.'</td>';
+                $tr .= '</tr>';
+
+                $item++;
+
+            }
+
+            return $tr;
+
+        }
+        public function savemmtos(array $data){
+
+            print_r($data);
+
+            $info = array(
+                'idEquip'       =>  $data['idEquip'],
+                'idTypeAct'     =>  2,
+                'idLocation'    =>  $data['slcLocal'],
+                'startDate'     =>  $data['txtFecIniMmto'],
+                'endDate'       =>  $data['txtFecFinMmto'],
+                'startHour'     =>  $data['txtHoraInicio'],
+                'endHour'       =>  $data['txtHoraFinal'],
+                'horometerIni'  =>  $data['txtHoroIni'],
+                'horometerEnd'  =>  $data['txtHoroFin'],
+                'observaciones' =>  $data['tarObservActiv'],
+                'edo_reg'       =>  1
+            );
+
+            if( !empty($data->hidId) ){
+
+                $info['usu_mod'] = $this->seda['idu'];
+                $info['fec_mod'] = date('Y-m-d H:i:s');
+                $info['ip_mod']  = Firewall::ipCatcher();
+
+                $where = array('id'=>$data->hidId);
+
+                $resp = $this->crud->update($info,BD_PREFI.'equipment',$where);
+
+            } else {
+
+                $info['usu_crea'] = $this->seda['idu'];
+                $info['fec_crea'] = date('Y-m-d H:i:s');
+                $info['ip_crea']  = Firewall::ipCatcher();
+                print_r($info);
+                $resp = $this->crud->insert($info,BD_PREFI.'equipment');
+
+            }
+
+
+            $resp = $this->crud->insert($info,BD_PREFI.'activities');
+
+            print_r($resp);
+
+            
+
+            if( $resp['rta'] == 'OK' ){
+
+                $cls = 'alert-success';
+                $msg = 'Información guardada correctamente. &nbsp;&nbsp;<i class="fa fa-check" aria-hidden="true"></i>';
+
+            
+            }
         }
 
     }
