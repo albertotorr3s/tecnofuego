@@ -418,8 +418,7 @@ class components
 
     // Listado de componentes
     public function compos(array $conf)
-    {
-
+    { 
         $sql = "SELECT p.id, p.description label
                     FROM " . BD_PREFI . "parts p, " . BD_PREFI . "parts_flds f
                     WHERE p.id = f.idPart

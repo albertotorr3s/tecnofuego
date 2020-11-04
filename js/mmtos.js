@@ -791,8 +791,7 @@ $(document).on('click','#btnSaveMmto',function(){
   });
 
   readTableComp();
-  readTableReps();
-
+  readTabComps();
 
   let cont = 0;
   let txtmsgvalidate = [];
@@ -824,27 +823,6 @@ $(document).on('click','#btnSaveMmto',function(){
     });
     valid(txtmsgvalidate,$('#txtHoraFinal'));
   } 
-  if(!$('#txtHoroIni').val()){
-    cont = 1;
-    txtmsgvalidate.push({
-      data:"horometro inicial"
-    });
-    valid(txtmsgvalidate,$('#txtHoroIni'));
-  } 
-  if(!$('#txtHoroFin').val()){
-    cont = 1;
-    txtmsgvalidate.push({
-      data:"horometro final"
-    });
-    valid(txtmsgvalidate,$('#txtHoroFin'));
-  } 
-  if(!$('#slcLocal').val()){
-    cont = 1;
-    txtmsgvalidate.push({
-      data:"Localizaciones"
-    });
-    valid(txtmsgvalidate,$('#slcLocal'));
-  } 
   if(!$('#hidVlsTecs').val()){
     cont = 1;
     txtmsgvalidate.push({
@@ -860,6 +838,7 @@ $(document).on('click','#btnSaveMmto',function(){
       let hidVlsReps = $('#hidVlsReps').val();
       let hidVlsDelComp = $('#hidVlsDelComp').val();
       let hidVlsDelRep = $('#hidVlsDelRep').val();
+      let hidVlsComps = $('#hidVlsComps').val();
       let txtFecIniMmto = $('#txtFecIniMmto').val();
       let txtHoraInicio = $('#txtHoraInicio').val();
       let txtFecFinMmto = $('#txtFecFinMmto').val();
@@ -876,6 +855,7 @@ $(document).on('click','#btnSaveMmto',function(){
         'hidVlsComp':hidVlsComp,
         'hidVlsReps':hidVlsReps,
         'hidVlsDelComp':hidVlsDelComp,
+        'hidVlsComps':hidVlsComps,
         'hidVlsDelRep':hidVlsDelRep,
         'txtFecIniMmto' : txtFecIniMmto,
         'txtHoraInicio' : txtHoraInicio,
@@ -901,6 +881,7 @@ $(document).on('click','#btnSaveMmto',function(){
           cache: false, // Appends _={timestamp} to the request query string
           success: function($dres) {
             console.log($dres);
+            $('#module-cont').html($dres)
             let conf = {
               'tarmsg'  : 'contMsg',
               'tarow'   : 'rowMsg',
@@ -995,4 +976,5 @@ function readTableReps(){
   fila = firep;
 
 }
+
 

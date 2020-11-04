@@ -19,7 +19,7 @@
 	
 	$(document).on('change','#slcCategoria',function(){
 
-		let cnf = {
+		let cnf = { 
     		model 	: 'components',
     		method 	: 'compos',
     		params	: {
@@ -36,7 +36,7 @@
 	});
 
 	$(document).on('change','#slcComponente',function(){
-
+		console.log($(this).val());
 		var params = {
 			'model'  : 'components',
 			'method' : 'control',
