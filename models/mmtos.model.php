@@ -13,7 +13,7 @@
         // Método inicial
         public function index(){
 
-            $lactiv = self::listactiv();
+          
 
         	$d = array(
                 'data' => array(
@@ -24,7 +24,6 @@
                     'tecnicos'  =>  self::tecnicos(array('def'=>'','typ'=>'retu')),
                     'empresas'  =>  self::empresas(array('def'=>'','typ'=>'retu')),
                     'estados'   =>  self::estados('return',''),
-                    'lactiv'    =>  $lactiv,
                     'usuario'   =>  $this->seda['idu']
                 ),
                 'file' => 'html/mmtos/index.html'
@@ -34,70 +33,123 @@
             echo $this->rndr->rendertpl();
 
         }
-        private function listactiv(){
-
-            $sql = "SELECT /*a.id Ítem, */DATE(a.fec_crea) 'Fecha registro', t.name Actividad, 
-                           CONCAT(UPPER(ma.label), ' ', UPPER(m.label)) 'Marca/Modelo', e.internalNumber 'Número interno',
-                           c.name Cliente, s.name Proyecto, a.startDate 'Fecha inicio', a.endDate 'Fecha fin'
-                    FROM tec_equipment e, tec_valists ma, tec_valists m, tec_sites s, tec_company c, tec_activities a, tec_typeactivity t
-                    WHERE e.idModel = m.id
-                        AND m.valfather = ma.id
-                        AND e.siteId = s.id
-                        AND s.companyId = c.id
-                        AND a.idTypeAct = t.id
-                        AND e.id = a.idEquip
-                        -- AND a.id > ? ";
-
-            $dp = array();
-
-            if( $_SESSION['u']['idp'] == 1 && $_SESSION['u']['ico'] == 1 ){
-                $sql .= ';';
-                //array_push($dp, ['kpa'=>1,'val'=>0,'typ'=>'int']);
-            } else {
-                $sql .= 'AND e.siteId = ?;';
-                array_push($dp, ['kpa'=>1,'val'=>$_SESSION['u']['isi'],'typ'=>'int']);
-            }
-
-            $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
-            //$ccols = array(0,1,2,4,7,8,9);
-            $ccols = array(0,3,6,7,8);
-            return $this->rndr->table_html($aw, $ccols, 'tabHtml');
-
-        }
+       
         
 
-        // Listar productos y servicios  
+        // Listar mantenimientos y servicios  
         public function listar(array $data){ 
 
 
-            print_r($data);
+            
 
-             $sql = "SELECT /*a.id Ítem, */DATE(a.fec_crea) 'Fecha registro', t.name Actividad, 
-                           CONCAT(UPPER(ma.label), ' ', UPPER(m.label)) 'Marca/Modelo', e.internalNumber 'Número interno',
-                           c.name Cliente, s.name Proyecto, a.startDate 'Fecha inicio', a.endDate 'Fecha fin',
-                    FROM tec_equipment e, tec_valists ma, tec_valists m, tec_sites s, tec_company c, tec_activities a, tec_typeactivity t
+             $sql = "SELECT DATE(a.fec_crea) 'Fecha registro',
+                        CONCAT(UPPER(ma.label), ' ', UPPER(m.label)) 'Marca/Modelo', e.internalNumber 'Número interno',
+                        c.name Cliente, s.name Proyecto, a.startDate 'Fecha inicio', a.endDate 'Fecha fin', tech.name 'Tecnico',
+                        CONCAT('<a idreg=\"',e.id,'\" href=\"editar\" rel=\"equipment\" action=\"upd\" title=\"Editar Mantenimiento\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-pencil\"></i></a>') MODIFICAR
+                    FROM tec_equipment e, tec_valists ma, tec_valists m, tec_sites s, tec_company c, tec_activities a, tec_typeactivity t, tec_activ_techs tec_a, tec_techs tech
                     WHERE e.idModel = m.id
                         AND m.valfather = ma.id
                         AND e.siteId = s.id
                         AND s.companyId = c.id
                         AND a.idTypeAct = t.id
-                        AND e.id = a.idEquip
-                        -- AND a.id > ? ";
+                        AND e.id = a.idEquip 
+                        AND tec_a.idactiv = a.id 
+                        AND tech.id = tec_a.idtech";
 
             $dp = array();
+            
+            $im = 1;
 
-            if( $_SESSION['u']['idp'] == 1 && $_SESSION['u']['ico'] == 1 ){
-                $sql .= ';';
-                //array_push($dp, ['kpa'=>1,'val'=>0,'typ'=>'int']);
-            } else {
-                $sql .= 'AND e.siteId = ?;';
-                array_push($dp, ['kpa'=>1,'val'=>$_SESSION['u']['isi'],'typ'=>'int']);
+            foreach ($data as $k => $v) {
+
+                if( strlen($v) > 0 ){
+
+                    switch($k) {
+
+
+                        case 'slcCliente':
+
+                            $sql .= " AND s.companyId = ? ";
+                            array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'int']);
+                            
+                        break;
+
+                        case 'slcSitios':
+
+                            $sql .= " AND e.siteId = ? ";
+                            array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'int']);
+                            
+                        break;
+
+
+                        case 'slcFlotas':
+
+                            $sql .= " AND e.typeEquipamentId = ? ";
+                            array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'int']);
+                            
+                        break;
+
+                        case 'slcMarca':
+
+                            $sql .= " AND m.valfather = ? ";
+                            array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'int']);
+                            
+                        break;
+
+                        case 'slcModelo':
+
+                            $sql .= " AND e.idModel = ? ";
+                            array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'int']);
+                            
+                        break;
+
+                        case 'txtNumInter':
+
+                            $sql .= " AND e.internalNumber = ? ";
+                            array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'string']);
+                            
+                        break;
+
+                        case 'slcTecnico':
+
+                            $sql .= " AND tech.id = ? ";
+                            array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'string']);
+                            
+                        break;
+
+                        case 'txtFecInicio':
+
+                            $sql .= " AND a.startDate = ? ";
+                            array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'string']);
+                            
+                        break;
+
+                        case 'txtFecFin':
+
+                            $sql .= " AND a.endDate = ? ";
+                            array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'string']);
+                            
+                        break;
+
+
+                        case 'slcEstado':
+
+                            $sql .= " AND e.edo_reg = ? ";
+                            array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'int']);
+                            
+                        break;
+
+                    }
+
+                    $im++;
+
+                }
+
             }
 
             $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
-            //$ccols = array(0,1,2,4,7,8,9);
-            $ccols = array(0,3,6,7,8);
-            return $this->rndr->table_html($aw, $ccols, 'tabHtml');
+            $ccols = array(0,1,2,6,7);
+            echo $this->rndr->table_html($aw, $ccols, 'tabHtml');
 
         }
 
@@ -443,7 +495,13 @@
                             AND c.idComponent = p.id
                             AND p.partserv = 'P'
                             AND ec.idEquip = ?
-                            AND ec.edo_reg = 1";
+                            AND ec.edo_reg = 1
+                            UNION
+                            SELECT er.idEqRep idreg, er.idRepo idelem, p.description, p.partserv
+                            FROM tec_equip_repos er, tec_parts p
+                            WHERE er.idEquip = ?
+                                AND er.edo_reg = 1
+                                AND er.idRepo = p.id;";
 
             $dp = array();
             array_push($dp, ['kpa'=>1,'val'=>$data,'typ'=>'int']);
@@ -479,53 +537,62 @@
                     $clsOpen = 'openModRepu';
                     $fldsCont = 'Repu';
                 }
-                
-                $ac .= '<div class="card">
+                $conttitle = $kf+1;
+                $ac .= '    <div class="card mb-2">
 									
-                            <div class="card-header bg-custom-ac" id="head'.$kf.'">
-                                
-                                <a class="btn btn-link '.$col.'" data-toggle="collapse" data-target="#coll'.$kf.'" aria-expanded="false" aria-controls="coll'.$kf.'">
-
-                                <a id="tit'.$fldsCont.$vf['idreg'].'" class="btn btn-link '.$col.'" data-toggle="collapse" data-target="#coll'.$kf.'" aria-expanded="false" aria-controls="coll'.$kf.'">
-                                    '.$vf['description'].'
-                                </a>
-                            </div>
-
-                            <div id="coll'.$kf.'" class="collapse '.$cl2.'" aria-labelledby="head'.$kf.'" data-parent="#accordionCompos">
-                                <div class="card-body bg-light">
-                                    
+                                <div class="card-header bg-custom-ac" id="head'.$kf.'">
                                     <div class="row">
-
-                                    <input type="hidden" class="form-control" name="hid'.$fldsCont.'Reemp'.$vf['idreg'].'" id="hid'.$fldsCont.'Reemp'.$vf['idreg'].'" value="'.$vf['idreg'].'">
-                                    
-                                    <div id="fldCont'.$fldsCont.$vf['idreg'].'" class="row">
-                                        '.$fl.'
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-lg-12">
-                                            <div class="form-group"><label class="form-control-label" for="tarObservElem'.$fldsCont.$vf['idreg'].'">Observación</label>
-                                                <textarea class="form-control ctrl-fld" name="tarObservElem'.$fldsCont.$vf['idreg'].'" id="tarObservElem'.$fldsCont.$vf['idreg'].'" rows="3"></textarea>
-                                            </div>
+                                        <div class="col-lg-10">
+                                            <a id="tit'.$fldsCont.$vf['idreg'].'" class="btn btn-link '.$col.'" data-toggle="collapse" data-target="#coll'.$kf.'" aria-expanded="false" aria-controls="coll'.$kf.'">
+                                                '.$vf['description'].' < '.$conttitle.' >
+                                            </a>
                                         </div>
-                                    </div>
 
-                                    <div class="row mt-2">
                                         
-                                        <div class="col-lg-2 d-none"><button id="btnChng'.$vf['idelem'].'" type="button" class="btn btn-success btn-sm '.$clsOpen.'" idelem="'.$vf['idelem'].'" idreg="'.$vf['idreg'].'" model="mmtos" method="chngelem">
-                                                Cambiar &nbsp;&nbsp;<i class="fa fa-refresh"></i>
+                                        <div class="col-lg-2 pt-2 pr-4 form-group form-check text-right">
+                                            <input type="checkbox" class="form-check-input chk-compo" id="chkRev'.$vf['idelem'].'" name="chkRev'.$vf['idelem'].'">
+                                            <label class="form-check-label form-control-label" for="chkRev'.$vf['idelem'].'">Revisado</label>
+                                        </div> 
+                                    </div>
+                                </div>
+
+                                <div id="coll'.$kf.'" class="collapse '.$cl2.'" aria-labelledby="head'.$kf.'" data-parent="#accordionCompos">
+                                    <div class="card-body bg-light">
+                                        <div id="rowMsg'.$kf.'" class="row hidden-row">
+                                            <div class="col-lg-12">
+                                                <div id="contMsg'.$kf.'" class="alert alert-danger"></div>
+                                            </div>
+                                        </div> 
+                                        
+                                        <div class="row">
+                                            
+                                            <input type="hidden" class="form-control" name="hid'.$fldsCont.'Reemp'.$vf['idreg'].'" id="hid'.$fldsCont.'Reemp'.$vf['idreg'].'" value="'.$vf['idreg'].'">
+                                            
+                                            <div id="fldCont'.$fldsCont.$vf['idreg'].'" class="col-lg-12 row">
+                                            
+                                                '.$fl.'
+                                                
+                                            </div>
+
+                                            
+                                            <div class="col-lg-12">
+                                                <div class="form-group"><label class="form-control-label" for="tarObservElem'.$fldsCont.$vf['idreg'].'">Observación</label>
+                                                    <textarea class="form-control ctrl-fld" name="tarObservElem'.$fldsCont.$vf['idreg'].'" id="tarObservElem'.$fldsCont.$vf['idreg'].'" rows="3"></textarea>                                                </div>
+                                            </div>
+
+                                        
+                                            <div class="col-md-6">
+                                                <button id="btnChng'.$vf['idelem'].'" type="button" class="btn btn-success btn-sm '.$clsOpen.'" idelem="'.$vf['idelem'].'" idreg="'.$vf['idreg'].'" model="mmtos" method="chngelem">
+                                                    Cambiar &nbsp;&nbsp;<i class="fa fa-refresh"></i>
+                                                </button>
+                                            </div>
+                                            <div class="col-md-6">
+                                            <button id="saveCompUpdate'.$kf.'" onclick="updateCompo()" type="button" class="btn btn-warning btn-sm pull-right">
+                                                Guardar</i>
                                             </button>
                                         </div>
-
-                                        <div class="col-lg-4">
-                                            <div class="form-group form-check">
-                                                <input type="hidden" class="form-check-input chk-compo" id="chkRev'.$vf['idelem'].'" name="chkRev'.$vf['idelem'].'">
-                                                <label class="form-check-label form-control-label" for="chkRev'.$vf['idelem'].'"></label>
-                                            </div>
-                                        </div>
-
+                                    
                                     </div>
-
                                 </div>
                             </div>
 
@@ -567,40 +634,52 @@
                 array_push($dpt, ['kpa'=>1,'val'=>$v['idField'],'typ'=>'int']);
                 $awt = $this->crud->select_group($sqlGetType, count($dpt), $dpt, 'arra');
                 $art = $awt['res'][0];
-
-                switch ($art['idType']) {
+                
+                if ($v['campo'] == 'Serial' || $v['campo'] == 'Consecutivo'){
+                    $fbox .= '<div class="col-lg-3">
+                        <div class="form-group">
+                            <label class="form-control-label">'.$v['campo'].'</label>
+                            <input type="number" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'" readonly>
+                            <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$v['idVal'].'">
+                        </div>
+                    </div>';
+                }else{
+                    switch ($art['idType']) {
                     
-                    case 41: // Número
+                        case 41: // Número
+                                $fbox .= '<div class="col-lg-3">
+                                            <div class="form-group">
+                                                <label class="form-control-label">'.$v['campo'].'</label>
+                                                <input type="number" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'">
+                                                <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$v['idVal'].'">
+                                            </div>
+                                          </div>';
+                        break;
+    
+                        case 42: // Fecha
                             $fbox .= '<div class="col-lg-3">
                                         <div class="form-group">
                                             <label class="form-control-label">'.$v['campo'].'</label>
-                                            <input type="number" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'" readonly>
+                                            <input type="date" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'" >
                                             <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$v['idVal'].'">
                                         </div>
                                       </div>';
-                    break;
-
-                    case 42: // Fecha
-                        $fbox .= '<div class="col-lg-3">
-                                    <div class="form-group">
-                                        <label class="form-control-label">'.$v['campo'].'</label>
-                                        <input type="date" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'" readonly>
-                                        <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$v['idVal'].'">
-                                    </div>
-                                  </div>';
-                    break;
-
-                    case 43: // Texto
-                        $fbox .= '<div class="col-lg-3">
-                                    <div class="form-group">
-                                        <label class="form-control-label">'.$v['campo'].'</label>
-                                        <input type="text" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'" readonly>
-                                        <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$v['idVal'].'">
-                                    </div>
-                                  </div>';
-                    break;
-                    
+                        break;
+    
+                        case 43: // Texto
+                            $fbox .= '<div class="col-lg-3">
+                                        <div class="form-group">
+                                            <label class="form-control-label">'.$v['campo'].'</label>
+                                            <input type="text" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'">
+                                            <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$v['idVal'].'">
+                                        </div>
+                                      </div>';
+                        break;
+                        
+                    }
                 }
+
+                
 
             }
             
@@ -653,7 +732,7 @@
                             $fbox = '<div class="col-lg-3">
                                         <div class="form-group">
                                             <label class="form-control-label">'.$v['campo'].'</label>
-                                            <input type="number" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$datfi['val'].'" readonly>
+                                            <input type="number" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$datfi['val'].'">
                                             <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$datfi['val'].'">
                                         </div>
                                       </div>';
@@ -663,7 +742,7 @@
                         $fbox = '<div class="col-lg-3">
                                     <div class="form-group">
                                         <label class="form-control-label">'.$v['campo'].'</label>
-                                        <input type="date" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$datfi['val'].'" readonly>
+                                        <input type="date" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$datfi['val'].'">
                                         <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$datfi['val'].'">
                                     </div>
                                   </div>';
@@ -673,7 +752,7 @@
                         $fbox = '<div class="col-lg-3">
                                     <div class="form-group">
                                         <label class="form-control-label">'.$v['campo'].'</label>
-                                        <input type="text" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$datfi['val'].'" readonly>
+                                        <input type="text" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$datfi['val'].'">
                                         <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$datfi['val'].'">
                                     </div>
                                   </div>';

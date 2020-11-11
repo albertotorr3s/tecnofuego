@@ -91,7 +91,7 @@ class components
                         AND cv.idComponent = c.id
                         AND p.idFamily = f.id
                         AND ec.idCompo = c.id
-                        AND e.id = ec.idEquip
+                        AND ec.idEquip = e.id 
                         AND p.idCategory = ct.id
                         AND cv.idField IN (31,34)
                         GROUP BY cv.idComponent

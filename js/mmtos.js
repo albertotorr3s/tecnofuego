@@ -779,7 +779,7 @@ $(document).on('click','#btnSaveAct',function(){
 });
 
 $(document).on('click','#btnSaveMmto',function(){
-
+  
   let tecs = [];
 
   $("#tabtecs tr").each(function(i) {
@@ -830,6 +830,14 @@ $(document).on('click','#btnSaveMmto',function(){
     });
     valid(txtmsgvalidate,$('#slcTecnico'));
   } 
+  var checkboxes = document.querySelectorAll('input[type=checkbox]')
+  var checkboxesVerified = document.querySelectorAll('input[type=checkbox]:checked')
+  
+  let total =  checkboxes.length - checkboxesVerified.length;
+  if (total > 1){
+    validChecks(total);
+    cont = 1;
+  }
 
     if(cont == 0){
       let idEquip = $('#hidIdEquip').val() ;
@@ -913,6 +921,16 @@ $(document).on('click','#btnSaveMmto',function(){
     }
 });
 
+function validChecks(data){
+  let conf = {
+    'tarmsg'  : 'contMsgComponents',
+    'tarow'   : 'rowMsgComponents',
+    'msg'     : 'Faltan '+data+' componentes por revisar.'
+  };
+    alertCustom(conf);
+  
+}
+
 function valid(txtmsgvalidate,valor2){
     
   let conf = {
@@ -976,5 +994,6 @@ function readTableReps(){
   fila = firep;
 
 }
+
 
 
