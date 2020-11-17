@@ -37,11 +37,124 @@ $(document).on('click','#btnSearchEquip',function(){
 
 });
 
-$(document).on('click','#btnCancelModEquip',function(){
-  $('#frmModalEquip').clearForm();
-  $('#detEquipos').html('');
+function chgValComp(data,id,idComp){
+
+  
+  let args;
+  
+  args = {'valor' : data,
+          'idField': id,
+          'idCompo': idComp}
+
+  let params = {
+    'model'  : 'mmtos',
+    'method' : 'editarCompAsync',
+    'args'   : args
+  };
+
+  let conf = {
+    'tarmsg'  : 'contMsg'+idComp,
+    'tarow'   : 'rowMsg'+idComp,
+    'msg'     : 'Novedad actualizada exitosamente'
+  };
+
+
+  $.ajax({
+    url: 'index.php',
+    type: 'POST',
+    dataType: 'html',
+    data: params,
+    cache: false, // Appends _={timestamp} to the request query string
+    success: function($dres) {
+      console.log($dres);
+      alertCustom(conf);         
+    }
+  });
+}
+
+
+function changeCompoActiv(idCompOld){
+
+  document.getElementById('idCompoOld').value = idCompOld;
+}
+
+$(document).on('click','#btnChangeCompActiv',function(){
+  
+  let idCompoOld = document.getElementById('idCompoOld').value;
+  let idEquip = document.getElementById('hidIdEquip').value;
+  let compos = [];
+  let idActiv = $('#hidIdActiv').value;
+    
+    $(".chk-compo").each(function(index) {
+        if( $(this).prop('checked') ){
+            compos.push($(this).val());            
+        }
+    });
+
+    let args = { 'idCompoOld' : idCompoOld,
+        'idEquip' : idEquip,
+        'compos' : parseInt(compos),
+      }
+    
+    let params = {
+        'model'  : 'mmtos',
+        'method' : 'changeCompo',
+        'args'   : args
+    }
+    $.ajax({
+      url: 'index.php',
+      type: 'POST',
+      dataType: 'html',
+      data: params,
+      cache: false, // Appends _={timestamp} to the request query string
+      success: function($dres) {
+        console.log($dres);
+        $("#modCompos").modal('hide');
+        changeComponentVisual(idEquip,parseInt(compos),idCompoOld);
+            
+      }
+    });
+  
 });
 
+function changeComponentVisual(idEquip,idCompo,idCompoOld){
+
+  let contenedor = $('#fldCont'+idCompoOld);
+  let visualizacion = true;
+
+
+  let args = { 'ideq' : idEquip,
+                'idco' : idCompo,
+                'visualizacion' : visualizacion
+  }
+
+  let params = {
+    'model'  : 'mmtos',
+    'method' : 'control_fill',
+    'args'   : args
+  }
+
+  let conf = {
+    'tarmsg'  : 'contMsg'+idCompoOld,
+    'tarow'   : 'rowMsg'+idCompoOld,
+    'msg'     : 'Novedad actualizada exitosamente'
+  };
+
+
+
+  $.ajax({
+    url: 'index.php',
+    type: 'POST',
+    dataType: 'html',
+    data: params,
+    cache: false, // Appends _={timestamp} to the request query string
+    success: function($dres) {
+      contenedor.html($dres)
+      alertCustom(conf);
+    }
+  });
+
+}
 $(document).on('change','#slcMarca',function(){
 
   let cnf = {
@@ -75,6 +188,8 @@ $(document).on('change','#slcMarcaMod',function(){
   cmbdep(cnf);
 
 });
+
+
 
 $(document).on('change','#slcCliente',function(){
 
@@ -792,7 +907,7 @@ $(document).on('click','#btnSaveMmto',function(){
 
   readTableComp();
   readTabComps();
-
+  let hidIdvalid
   let cont = 0;
   let txtmsgvalidate = [];
   if(!$('#txtFecIniMmto').val()){
@@ -830,6 +945,9 @@ $(document).on('click','#btnSaveMmto',function(){
     });
     valid(txtmsgvalidate,$('#slcTecnico'));
   } 
+  if($('#idActiv').val()){
+     hidIdvalid = $('#idActiv').val();
+  }
   var checkboxes = document.querySelectorAll('input[type=checkbox]')
   var checkboxesVerified = document.querySelectorAll('input[type=checkbox]:checked')
   
@@ -840,6 +958,7 @@ $(document).on('click','#btnSaveMmto',function(){
   }
 
     if(cont == 0){
+      let hidId = hidIdvalid ;
       let idEquip = $('#hidIdEquip').val() ;
       let hidVlsTecs = $('#hidVlsTecs').val();
       let hidVlsComp = $('#hidVlsComp').val();
@@ -859,6 +978,7 @@ $(document).on('click','#btnSaveMmto',function(){
       
       let args = {
         'idEquip':idEquip,
+        'hidId':hidId,
         'hidVlsTecs':hidVlsTecs,
         'hidVlsComp':hidVlsComp,
         'hidVlsReps':hidVlsReps,

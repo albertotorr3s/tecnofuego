@@ -822,8 +822,8 @@
                         AND cv.idComponent = c.id
                         AND p.idFamily = f.id
                         AND p.idCategory = ct.id
-                        AND c.edo_reg <> 0
                         AND cv.idField IN (31,34)
+                        AND c.edo_reg 
                         AND c.id IN (".$cla.") ";
 
             /*$dp = array();

@@ -12,9 +12,6 @@
 
         // Método inicial
         public function index(){
-
-          
-
         	$d = array(
                 'data' => array(
                     'header'	=>  $this->rndr->renderHeader('Mantenimientos'),
@@ -38,14 +35,10 @@
 
         // Listar mantenimientos y servicios  
         public function listar(array $data){ 
-
-
-            
-
-             $sql = "SELECT DATE(a.fec_crea) 'Fecha registro',
+             $sql = "SELECT  DATE(a.fec_crea) 'Fecha registro',
                         CONCAT(UPPER(ma.label), ' ', UPPER(m.label)) 'Marca/Modelo', e.internalNumber 'Número interno',
-                        c.name Cliente, s.name Proyecto, a.startDate 'Fecha inicio', a.endDate 'Fecha fin', tech.name 'Tecnico',
-                        CONCAT('<a idreg=\"',e.id,'\" href=\"editar\" rel=\"equipment\" action=\"upd\" title=\"Editar Mantenimiento\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-pencil\"></i></a>') MODIFICAR
+                        c.name Cliente, s.name Proyecto, a.startDate 'Fecha inicio', a.endDate 'Fecha fin',
+                        CONCAT('<a idreg=\"',a.id,'\" href=\"editar\" rel=\"mmtos\" action=\"upd\" title=\"Editar Mantenimiento\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-pencil\"></i></a>') MODIFICAR
                     FROM tec_equipment e, tec_valists ma, tec_valists m, tec_sites s, tec_company c, tec_activities a, tec_typeactivity t, tec_activ_techs tec_a, tec_techs tech
                     WHERE e.idModel = m.id
                         AND m.valfather = ma.id
@@ -54,7 +47,8 @@
                         AND a.idTypeAct = t.id
                         AND e.id = a.idEquip 
                         AND tec_a.idactiv = a.id 
-                        AND tech.id = tec_a.idtech";
+                        AND tech.id = tec_a.idtech
+                        GROUP BY a.id";
 
             $dp = array();
             
@@ -155,8 +149,8 @@
 
         // Lanzar formulario de nuevo registro
         public function nuevo(int $data){
-            $lbl = self::eqlabel($data);
 
+            $lbl = self::eqlabel($data);
             $d = array(
                 'data' => array(
                     'header'	    =>  $this->rndr->renderHeader('Gestionar mantenimientos'),
@@ -214,38 +208,284 @@
 
         // Mostrar datos para editar
         public function editar(int $data){
-            $sql = "SELECT c.idcateg id, c.categoria, c.edo_reg
-                    FROM ".BD_PREFI."categenlaces c
-                    WHERE c.idcateg = ?
+
+           
+
+            $sql = "SELECT *
+                FROM ".BD_PREFI."equipment e, ".BD_PREFI."valists ma, ".BD_PREFI."valists m, ".BD_PREFI."sites s, ".BD_PREFI."company c, ".BD_PREFI."activities a, ".BD_PREFI."typeactivity t, ".BD_PREFI."activ_techs tec_a, ".BD_PREFI."techs tchs
+                WHERE e.idModel = m.id
+                    AND m.valfather = ma.id
+                    AND e.siteId = s.id
+                    AND s.companyId = c.id
+                    AND a.idTypeAct = t.id
+                    AND e.id = a.idEquip 
+                    AND tec_a.idactiv = a.id 
+                    AND tchs.id = tec_a.idtech
+                    AND a.id = ?
                     LIMIT 1;";
 
-            $re = $this->crud->select_id($sql, $data, 'arra');
-            $ar = $re['res'];
+                    $re = $this->crud->select_id($sql, $data, 'arra');
+                    $ar = $re['res'];
+
+
+            $lbl = self::eqlabel($ar['idEquip']);
+
+
+            
 
             $d = array(
                 'data' => array(
-                    'header'	=>  $this->rndr->renderHeader('Gestionar categorías de enlaces'),
-                    'footer'    =>  $this->rndr->renderFooter(EMP_NAME,YEARCOPY),
-                    'estados'   =>  self::estados('return',$ar['edo_reg']),
-                    'usuario'   =>  $this->seda['idu']
+                    'header'	    =>  $this->rndr->renderHeader('Editar mantenimientos'),
+                    'footer'        =>  $this->rndr->renderFooter(EMP_NAME,YEARCOPY),
+                    'hidIdEquip'       =>  $lbl['ideq'],
+                    'hidIdActiv'       =>  $data,
+                    'startDate'       =>  $ar['startDate'],
+                    'endDate'       =>  $ar['endDate'],
+                    'startHour'       =>  $ar['startHour'],
+                    'endHour'       =>  $ar['endHour'],
+                    'horometerIni'       =>  $ar['horometerIni'],
+                    'horometerEnd'       =>  $ar['horometerEnd'],
+                    'idLocation'       =>  $ar['idLocation'],
+                    'observaciones'       =>  $ar['observaciones'],
+                    'idActiv'       => $data,
+                    'idsite'        =>  $lbl['sid'],
+                    'eqlabel'       =>  $lbl['lbl'],
+                    'horomet'       =>  $lbl['hor'],
+                    'accorde'       =>  self::collapseData($ar['idEquip']),
+                    'locatio'       =>  self::locations(array('def'=>'','typ'=>'retu','sit'=>$lbl['sid'])),
+                    'familia'       =>  self::lists(array('idlst'=>4,'str'=>'SELECCIONE FAMILIA','def'=>'')),
+                    'categoria'     =>  self::lists(array('idlst'=>5,'str'=>'SELECCIONE CATEGORÍAS','def'=>'')),
+                    'partype'       =>  self::partype('return',''),
+                    'estados'       =>  self::estados('return',''),
+                    'tecnicos'      =>  self::lstecActiv($ar['idactiv']),
+                    'reps'      =>  self::lsRepsActiv($ar['idactiv']),
+                    'Listtecnicos'      =>  self::lstec($lbl['sid']),
+                    'usuario'       =>  $this->seda['idu'] 
                 ),
                 'file' => 'html/mmtos/editar.html'
             );
+            
 
             foreach ($ar as $key => $value) {
                 $d['data'][$key] = $value;
             }
+
+
+            
 
             $this->rndr->setData($d);
             echo $this->rndr->rendertpl();
 
         }
 
+        public function editarCompAsync(array $data){
+           
+            $info['valField'] = $data['valor'];
+            $info['usu_mod'] = $this->seda['idu'];
+            $info['fec_mod'] = date('Y-m-d H:i:s');
+            $info['ip_mod']  = Firewall::ipCatcher();
+
+            $where = array('idField'=>$data['idField'],
+                            'idComponent'=>$data['idCompo']);
+
+            $resp = $this->crud->update($info,BD_PREFI.'compo_vals',$where);
+           
+
+        }
+
+        public function changeCompo(array $data){
+
+            $info = array();
+
+            $info['edo_reg'] = 0;
+            $info['usu_mod'] = $this->seda['idu'];
+            $info['fec_mod'] = date('Y-m-d H:i:s');
+            $info['ip_mod']  = Firewall::ipCatcher();
+
+            $where = array('id'=>$data['idCompoOld']);
+
+            // actualiza el estado del componente antiguo a inactivo
+
+            $resp = $this->crud->update($info,BD_PREFI.'components',$where);
+            unset($info,$where,$resp);
+
+            $info2 = array();
+
+            $info2['edo_reg'] = 2;
+            $info2['usu_mod'] = $this->seda['idu'];
+            $info2['fec_mod'] = date('Y-m-d H:i:s');
+            $info2['ip_mod']  = Firewall::ipCatcher();
+            
+            $where2 = array('id'=>$data['compos']);
+
+            // actualizar el estado del componente nuevo a asignado
+            
+            $resp2 = $this->crud->update($info2,BD_PREFI.'components',$where2);
+            
+            unset($info2,$where2,$resp2);
+
+            $info3 = array();
+
+            $info3['edo_reg'] = 0;
+            $info3['usu_mod'] = $this->seda['idu'];
+            $info3['fec_mod'] = date('Y-m-d H:i:s');
+            $info3['ip_mod']  = Firewall::ipCatcher();
+
+            $where3 = array('idEquip'=>$data['idEquip'],
+                            'idCompo'=>$data['idCompoOld']);
+            
+            
+            // actualizar la relacion del componente con el equipo                
+
+            $resp3 = $this->crud->update($info3,BD_PREFI.'equip_compos',$where3);
+           
+            unset($info3,$where3,$resp3);
+            
+
+            $sql = "SELECT c.id idReg  FROM tec_equip_compos c WHERE c.idCompo = ?";
+                    
+            $re = $this->crud->select_id($sql, $data['compos'], 'arra');
+            $ar = $re['res'];
+            
+           
+          
+            if (!empty($re)) {
+                
+                unset($info2,$where2,$resp2);
+
+                $info3 = array();
+
+                $info3['idEquip'] = $data['idEquip'];
+                $info3['edo_reg'] = 1;
+                $info3['usu_mod'] = $this->seda['idu'];
+                $info3['fec_mod'] = date('Y-m-d H:i:s');
+                $info3['ip_mod']  = Firewall::ipCatcher();
+
+                $where3 = array('idCompo'=>$data['compos']);
+                
+                
+                // actualizar la relacion del componente con el equipo                
+
+                $resp3 = $this->crud->update($info3,BD_PREFI.'equip_compos',$where3);
+
+               
+            }else {
+               
+                $infr['idEquip'] = $data['idEquip'];
+                $infr['idCompo'] = $data['compos'];
+                $infr['edo_reg'] = 1;
+                $infr['usu_crea'] = $this->seda['idu'];
+                $infr['fec_crea'] = date('Y-m-d H:i:s');
+                $infr['ip_crea']  = Firewall::ipCatcher();
+                
+                // inserta  relacion del componente nuevo con el equipo   
+
+                $rr = $this->crud->insert($infr,BD_PREFI.'equip_compos');
+                
+            }
+        }
+
+
+        public function lstecActiv(int $idActiv){
+
+            $sql = "SELECT t.document, t.name, t.idGroup , at.parper 
+                FROM tec_techs t, tec_activities a , tec_activ_techs at 
+                    WHERE a.id = at.idActiv 
+                        and at.idTech = t.id 
+                        and a.id = ?
+                        and at.edo_reg = ?";
+                    
+            $dp = array();
+            array_push($dp, ['kpa'=>1,'val'=>$idActiv,'typ'=>'int']);
+            array_push($dp, ['kpa'=>2,'val'=>1,'typ'=>'int']);
+            $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
+            $ar = $aw['res'];
+            $tr = '';
+            $item = 1;
+
+            
+            foreach ($ar as $k => $v) {
+
+                $btns = '<button class="btn btn-info btn-sm edit-dty-rep" type="button" idfila="'.$k.'" idx="'.$v['idEqRep'].'"><i class="fa fa-pencil"></i></button>&nbsp;&nbsp;';
+		        $btns .= '<button class="btn btn-danger btn-sm dele-dty-rep" type="button" idfila="'.$k.'" idx="'.$v['idEqRep'].'"><i class="fa fa-times"></i></button>';
+                
+                $hids = '<input type="hidden" name="hidFami'.$k.'" id="hidFami'.$k.'" value="'.$v['document'].'">';
+                $hids .= '<input type="hidden" name="hidCats'.$k.'" id="hidCats'.$k.'" value="'.$v['name'].'">';
+                $hids .= '<input type="hidden" name="hidRepu'.$k.'" id="hidRepu'.$k.'" value="'.$v['idGroup'].'">';
+                $hids .= "<input type='hidden' name='hidVals".$k."' id='hidVals".$k."' value='".$v['parper']."'>";
+                
+                $tr .= '<tr id="tr'.$k.'">';
+                    //$tr .= '<td id="tdItem'.$k.'" class="text-center">'.$hids.$v['repu'].'</td>';
+                    $tr .= '<td id="tdRepu'.$k.'" class="text-center">'.$v['document'].'</td>';
+                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['name'].'</td>';
+                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['idGroup'].'</td>';
+                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['parper'].'</td>';
+                    $tr .= '<td class="text-center">'.$btns.'</td>';
+                $tr .= '</tr>';
+
+                $item++;
+
+            }
+
+            return $tr;
+
+        }
+
+        public function lsRepsActiv(int $idActiv){
+
+            $sql = "SELECT p.description, aps.cant, p.partNum, aps.vunit, aps.vtotal 
+                FROM tec_activities a, tec_parts p, tec_activ_part_serv aps 
+                    WHERE aps.idactiv = a.id 
+                        and aps.idpartserv = p.id 
+                        and a.id = ? 
+                        and aps.edo_reg = ?";
+                    
+            $dp = array();
+            array_push($dp, ['kpa'=>1,'val'=>$idActiv,'typ'=>'int']);
+            array_push($dp, ['kpa'=>2,'val'=>1,'typ'=>'int']);
+            $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
+            $ar = $aw['res'];
+            $tr = '';
+            $item = 1;
+            
+            foreach ($ar as $k => $v) {
+
+                $btns = '<button class="btn btn-info btn-sm edit-dty-rep" type="button" idfila="'.$k.'" idx="'.$v['idEqRep'].'"><i class="fa fa-pencil"></i></button>&nbsp;&nbsp;';
+		        $btns .= '<button class="btn btn-danger btn-sm dele-dty-rep" type="button" idfila="'.$k.'" idx="'.$v['idEqRep'].'"><i class="fa fa-times"></i></button>';
+                
+                $hids = '<input type="hidden" name="hidFami'.$k.'" id="hidFami'.$k.'" value="'.$v['document'].'">';
+                $hids .= '<input type="hidden" name="hidCats'.$k.'" id="hidCats'.$k.'" value="'.$v['name'].'">';
+                $hids .= '<input type="hidden" name="hidRepu'.$k.'" id="hidRepu'.$k.'" value="'.$v['idGroup'].'">';
+                $hids .= "<input type='hidden' name='hidVals".$k."' id='hidVals".$k."' value='".$v['parper']."'>";
+                
+                $tr .= '<tr id="tr'.$k.'">';
+                    //$tr .= '<td id="tdItem'.$k.'" class="text-center">'.$hids.$v['repu'].'</td>';
+                    $tr .= '<td id="tdRepu'.$k.'" class="text-center">'.$v['description'].'</td>';
+                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['cant'].'</td>';
+                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['partNum'].'</td>';
+                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['vunit'].'</td>';
+                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['vtotal'].'</td>';
+                    $tr .= '<td class="text-center">'.$btns.'</td>';
+                $tr .= '</tr>';
+
+                $item++;
+
+            }
+
+            return $tr;
+
+        }
+
+
+
+
+
+
+
+
         // Acción de guardar
         public function guardar(array $data){
 
-           
-            
     
             $info = array(
                 'idEquip'       =>  $data['idEquip'],
@@ -261,13 +501,13 @@
                 'edo_reg'       =>  1
             );
 
-          if( !empty($data->hidId) ){
+          if( !empty($data['hidId']) ){
 
                 $info['usu_mod'] = $this->seda['idu'];
                 $info['fec_mod'] = date('Y-m-d H:i:s');
                 $info['ip_mod']  = Firewall::ipCatcher();
 
-                $where = array('id'=>$data->hidId);
+                $where = array('id'=>$data['hidId']);
 
                 $resp = $this->crud->update($info,BD_PREFI.'activities',$where);
 
@@ -281,6 +521,7 @@
 
             } 
 
+        
 
             if( $resp['rta'] == 'OK' ){
 
@@ -496,6 +737,8 @@
                             AND p.partserv = 'P'
                             AND ec.idEquip = ?
                             AND ec.edo_reg = 1
+                            AND c.edo_reg = 2
+                            GROUP BY ec.idCompo
                             UNION
                             SELECT er.idEqRep idreg, er.idRepo idelem, p.description, p.partserv
                             FROM tec_equip_repos er, tec_parts p
@@ -523,8 +766,8 @@
                 if( $vf['partserv'] == 'P' ) {
                     
                     $arfl = array('ideq'=>$data,'idco'=>$vf['idelem'],'idreg'=>$vf['idreg']);
-
                     $fb = self::control_fill($arfl);
+                    
                     unset($arfl);
                     $fl = $fb['fbox'];
                     $clsOpen = 'openModComp';
@@ -533,6 +776,7 @@
 
                 } else {
                     $fb = self::repo_fill(array('idrep'=>$vf['idelem'],'ideqp'=>$data,'idreg'=>$vf['idreg']));
+                    
                     $fl = $fb;
                     $clsOpen = 'openModRepu';
                     $fldsCont = 'Repu';
@@ -558,9 +802,9 @@
 
                                 <div id="coll'.$kf.'" class="collapse '.$cl2.'" aria-labelledby="head'.$kf.'" data-parent="#accordionCompos">
                                     <div class="card-body bg-light">
-                                        <div id="rowMsg'.$kf.'" class="row hidden-row">
+                                        <div id="rowMsg'.$vf['idelem'].'" class="row hidden-row">
                                             <div class="col-lg-12">
-                                                <div id="contMsg'.$kf.'" class="alert alert-danger"></div>
+                                                <div id="contMsg'.$vf['idelem'].'" class="alert alert-success"></div>
                                             </div>
                                         </div> 
                                         
@@ -568,7 +812,7 @@
                                             
                                             <input type="hidden" class="form-control" name="hid'.$fldsCont.'Reemp'.$vf['idreg'].'" id="hid'.$fldsCont.'Reemp'.$vf['idreg'].'" value="'.$vf['idreg'].'">
                                             
-                                            <div id="fldCont'.$fldsCont.$vf['idreg'].'" class="col-lg-12 row">
+                                            <div id="fldCont'.$vf['idelem'].'" class="col-lg-12 row">
                                             
                                                 '.$fl.'
                                                 
@@ -577,26 +821,20 @@
                                             
                                             <div class="col-lg-12">
                                                 <div class="form-group"><label class="form-control-label" for="tarObservElem'.$fldsCont.$vf['idreg'].'">Observación</label>
-                                                    <textarea class="form-control ctrl-fld" name="tarObservElem'.$fldsCont.$vf['idreg'].'" id="tarObservElem'.$fldsCont.$vf['idreg'].'" rows="3"></textarea>                                                </div>
+                                                    <textarea  class="form-control ctrl-fld" name="tarObservElem'.$fldsCont.$vf['idreg'].'" id="tarObservElem'.$vf['idelem'].'" rows="3"></textarea>                                                </div>
                                             </div>
 
                                         
                                             <div class="col-md-6">
-                                                <button id="btnChng'.$vf['idelem'].'" type="button" class="btn btn-success btn-sm '.$clsOpen.'" idelem="'.$vf['idelem'].'" idreg="'.$vf['idreg'].'" model="mmtos" method="chngelem">
+                                                <button onclick="changeCompoActiv('.$vf['idelem'].')" id="btnChng'.$vf['idelem'].'" type="button" class="btn btn-success btn-sm '.$clsOpen.'" idelem="'.$vf['idelem'].'" idreg="'.$vf['idreg'].'" model="mmtos" method="chngelem">
                                                     Cambiar &nbsp;&nbsp;<i class="fa fa-refresh"></i>
                                                 </button>
                                             </div>
-                                            <div class="col-md-6">
-                                            <button id="saveCompUpdate'.$kf.'" onclick="updateCompo()" type="button" class="btn btn-warning btn-sm pull-right">
-                                                Guardar</i>
-                                            </button>
                                         </div>
-                                    
                                     </div>
                                 </div>
-                            </div>
 
-                        </div>';
+                            </div>';
 
             }
 
@@ -609,17 +847,24 @@
         // Render de campos de control con valores
         public function control_fill(array $data) {
 
+            
+
             $sql = "SELECT cv.idField, cv.valField, v.label campo, v.id idVal
-                    FROM tec_compo_vals cv, tec_equip_compos ec, tec_valists v, tec_parts_flds p
+                    FROM tec_compo_vals cv, tec_equip_compos ec, tec_valists v, tec_components c
                     WHERE cv.idComponent = ec.idCompo
                         AND cv.idField = v.id
-                        AND cv.idComponent = p.id
+                        AND ec.idCompo = c.id
                         AND ec.idEquip = ?
-                        AND cv.idComponent = ?;";
+                        AND cv.idComponent = ?
+                        AND ec.edo_reg = ?
+                        AND c.edo_reg = ?
+                        GROUP BY v.id";
 
             $dp = array();
             array_push($dp, ['kpa'=>1,'val'=>$data['ideq'],'typ'=>'int']);
             array_push($dp, ['kpa'=>2,'val'=>$data['idco'],'typ'=>'int']);
+            array_push($dp, ['kpa'=>3,'val'=>1,'typ'=>'int']);
+            array_push($dp, ['kpa'=>4,'val'=>2,'typ'=>'int']);
             $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
             $ar = $aw['res'];
 
@@ -639,7 +884,7 @@
                     $fbox .= '<div class="col-lg-3">
                         <div class="form-group">
                             <label class="form-control-label">'.$v['campo'].'</label>
-                            <input type="number" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'" readonly>
+                            <input type="text" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'" readonly>
                             <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$v['idVal'].'">
                         </div>
                     </div>';
@@ -650,7 +895,7 @@
                                 $fbox .= '<div class="col-lg-3">
                                             <div class="form-group">
                                                 <label class="form-control-label">'.$v['campo'].'</label>
-                                                <input type="number" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'">
+                                                <input onchange="chgValComp(this.value,this.id,'.$data['idco'].')" type="number" id="'.$v['idField'].'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'">
                                                 <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$v['idVal'].'">
                                             </div>
                                           </div>';
@@ -660,7 +905,7 @@
                             $fbox .= '<div class="col-lg-3">
                                         <div class="form-group">
                                             <label class="form-control-label">'.$v['campo'].'</label>
-                                            <input type="date" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'" >
+                                            <input onchange="chgValComp(this.value,this.id,'.$data['idco'].')" type="date" id="'.$v['idField'].'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'" >
                                             <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$v['idVal'].'">
                                         </div>
                                       </div>';
@@ -670,7 +915,7 @@
                             $fbox .= '<div class="col-lg-3">
                                         <div class="form-group">
                                             <label class="form-control-label">'.$v['campo'].'</label>
-                                            <input type="text" id="'.$fld.'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'">
+                                            <input onchange="chgValComp(this.value,this.id,'.$data['idco'].')" type="text" id="'.$v['idField'].'" name="'.$fld.'" placeholder="'.$v['campo'].'" class="form-control ctrl-fld" value="'.$v['valField'].'">
                                             <input type="hidden" id="'.$hfld.'" name="'.$hfld.'" value="'.$v['idVal'].'">
                                         </div>
                                       </div>';
@@ -682,8 +927,12 @@
                 
 
             }
-            
+            if($data['visualizacion']){
+                echo $fbox;
+            }
+
             return array('fbox'=>$fbox,'lflds'=>$lflds);
+            
 
         }
 
@@ -1348,7 +1597,7 @@
         }
         public function savemmtos(array $data){
 
-            print_r($data);
+           
 
             $info = array(
                 'idEquip'       =>  $data['idEquip'],
@@ -1379,7 +1628,7 @@
                 $info['usu_crea'] = $this->seda['idu'];
                 $info['fec_crea'] = date('Y-m-d H:i:s');
                 $info['ip_crea']  = Firewall::ipCatcher();
-                print_r($info);
+               
                 $resp = $this->crud->insert($info,BD_PREFI.'equipment');
 
             }
@@ -1387,7 +1636,7 @@
 
             $resp = $this->crud->insert($info,BD_PREFI.'activities');
 
-            print_r($resp);
+           
 
             
 
