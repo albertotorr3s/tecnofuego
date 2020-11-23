@@ -48,6 +48,7 @@
 
 					<form id="mmtos" name="mmtos" action="guardar">
 
+						<input type="hidden" id="hidIdActiv" name="hidId" value="{hidIdActiv}">
 						<input type="hidden" id="hidId" name="hidId" value="{id}">
 						<input type="hidden" id="hidIdEquip" name="hidIdEquip" value="{hidIdEquip}">
 						<input type="hidden" id="hidIdProy" name="hidIdProy" value="{idsite}">
@@ -60,6 +61,8 @@
 						<input type="hidden" id="hidVlsDelComp" name="hidVlsDelComp" value="">
 						<input type="hidden" name="hidVlsComps" id="hidVlsComps">
 
+
+						<input type="hidden" id="hidPercentajeTecs" name="hidPercentajeTecs" value="{totalPercentaje}">
 					
 
 						
@@ -239,6 +242,21 @@
 
 								</div>
 
+							</div>
+							<div class="row mt-3">
+
+								<div class="col-lg-12">
+
+									<table class="table table-borderless">
+										<tr>
+											<td width="75%" class="text-right"><span class="font-weight-bold text-primary">TOTALES</span></td>
+											<td width="15%" class="text-right bg-light font-weight-bold"><span id="percentajeTecs">0</span> % <input type="hidden" id="contPercentaje" value="{totalPercentaje}"></td>
+											<td width="10%">&nbsp;</td>
+										</tr>
+									</table>
+								
+								</div>
+								
 							</div>
 							
 						  </div>
@@ -426,6 +444,7 @@
 
 					<div class="col-lg-4">
 						<div class="form-group">
+							<input type="hidden" name="" id="idCompoOld" value="">
 							<label class="form-control-label">Cliente <span class="text-danger">*</span></label>
 							<select id="slcClienteMod" name="slcClienteMod" class="form-control form-control-sm cliente">{empresas}</select>
 							<input type="hidden" name="hidClienteMod" id="hidClienteMod" class="clihid">
@@ -512,7 +531,7 @@
 			<button id="btnCancelModCompo" type="button" class="btn btn-danger" data-dismiss="modal">
 				Cerrar &nbsp;&nbsp;<i class="fa fa-times"></i>
 			</button>
-			<button id="btnSaveModCompo" type="button" class="btn btn-success">
+			<button id="btnChangeCompActiv" type="button" class="btn btn-success">
 				Agregar &nbsp;&nbsp;<i class="fa fa-plus"></i>
 			</button>
 		</div>

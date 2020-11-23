@@ -75,27 +75,25 @@ class components
     {
         
         $sql = "SELECT cy.name CLIENTE, s.name 'PROYECTO/MINA', p.description COMPONENTE, 
-                        cv.valField 'SN/CONSEC.', f.label FAMILIA, ct.label CATEGORÍA, e.internalNumber No_EQUIPO,  
+                        cv.valField 'SN/CONSEC.', f.label FAMILIA, ct.label CATEGORÍA, if(e.internalNumber IS NULL, 'N/A',e.internalNumber) U_EQUIPO,  
                         CASE c.edo_reg 
                             WHEN '0' THEN 'INACTIVO'
                             WHEN '1' THEN 'ACTIVO'
                             WHEN '2' THEN 'ASIGNADO'
                         ELSE 'no es un estado' END 'ESTADO',
                         CONCAT('<a idreg=\"',c.id,'\" href=\"editar\" rel=\"components\" action=\"upd\" title=\"Editar componente\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-pencil\"></i></a>') MODIFICAR
-                    FROM tec_components c, tec_sites s, tec_company cy, tec_parts p, 
-                        tec_compo_vals cv, tec_valists f, tec_valists ct, tec_equip_compos ec,
-                        tec_equipment e
+                        FROM tec_components c, tec_sites s, tec_company cy, tec_parts p, 
+                        tec_compo_vals cv, tec_valists f, tec_valists ct, tec_equip_compos ec
+                        LEFT JOIN tec_equipment e
+						ON e.id = ec.idEquip
                     WHERE c.siteId = s.id
                         AND s.companyId = cy.id
                         AND c.idComponent = p.id
                         AND cv.idComponent = c.id
                         AND p.idFamily = f.id
                         AND ec.idCompo = c.id
-                        AND ec.idEquip = e.id 
                         AND p.idCategory = ct.id
-                        AND cv.idField IN (31,34)
-                        GROUP BY cv.idComponent
-                        HAVING COUNT(1)";
+                        AND cv.idField IN (31,34)";
 
 
 
@@ -183,7 +181,8 @@ class components
             }
         }
 
-        $sql .= ';';
+        $sql .= " GROUP BY cv.idComponent
+        HAVING COUNT(1); ";
 
         $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
         $ccols = array(0, 4, 5, 6, 7, 8);
@@ -283,6 +282,27 @@ class components
                 $idco = $data->hidId;
 
                 $resp = $this->crud->update($info, BD_PREFI . 'components', $where);
+
+                if ($data->slcEstado == 0 || $data->slcEstado = 1){
+
+                   
+
+                    $infc = array(
+                        'idEquip'   =>  null,
+                        'edo_reg'   =>  1
+                    );
+    
+                    $infc['usu_mod'] = $this->seda['idu'];
+                    $infc['fec_mod'] = date('Y-m-d H:i:s');
+                    $infc['ip_mod']  = Firewall::ipCatcher();
+    
+                    $wherec = array('idCompo' => $data->hidId);
+    
+                    $rc = $this->crud->update($infc,BD_PREFI.'equip_compos',$wherec);
+                    
+        
+                }
+                
             } else {
 
                 $info['usu_crea'] = $this->seda['idu'];
@@ -292,6 +312,19 @@ class components
                 $resp = $this->crud->insert($info, BD_PREFI . 'components');
 
                 $idco = $resp['lstId'];
+
+                $infc = array(
+                    'idEquip'   =>  null,
+                    'idCompo'   =>  $idco,
+                    'edo_reg'   =>  1
+                );
+
+                $infc['usu_crea'] = $this->seda['idu'];
+                $infc['fec_crea'] = date('Y-m-d H:i:s');
+                $infc['ip_crea']  = Firewall::ipCatcher();
+
+                $rc = $this->crud->insert($infc,BD_PREFI.'equip_compos');
+
             }
 
             $flds = explode(',', trim($data->hidCtrlFdls, ','));

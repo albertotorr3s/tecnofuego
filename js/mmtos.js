@@ -39,12 +39,35 @@ $(document).on('click','#btnSearchEquip',function(){
 
 function chgValComp(data,id,idComp){
 
-  
+  let idActiv;
   let args;
+  let conf;
+  if(!idComp){
+    if($("#idActiv").val()){
+      idActiv = $("#idActiv").val();
+    }else if($("#hidIdActiv").val()){
+      idActiv = $("#hidIdActiv").val();
+    }
+    args = {'valor' : data,
+          'idCompo': id,
+          'idActiv': idActiv}
+    conf = {
+      'tarmsg'  : 'contMsg'+id,
+      'tarow'   : 'rowMsg'+id,
+      'msg'     : 'Novedad actualizada exitosamente'
+    };
+  }else{
+    args = {'valor' : data,
+    'idField': id,
+    'idCompo': idComp}
+    conf = {
+      'tarmsg'  : 'contMsg'+idComp,
+      'tarow'   : 'rowMsg'+idComp,
+      'msg'     : 'Novedad actualizada exitosamente'
+    };
+  }
+
   
-  args = {'valor' : data,
-          'idField': id,
-          'idCompo': idComp}
 
   let params = {
     'model'  : 'mmtos',
@@ -52,11 +75,7 @@ function chgValComp(data,id,idComp){
     'args'   : args
   };
 
-  let conf = {
-    'tarmsg'  : 'contMsg'+idComp,
-    'tarow'   : 'rowMsg'+idComp,
-    'msg'     : 'Novedad actualizada exitosamente'
-  };
+  
 
 
   $.ajax({
@@ -74,6 +93,7 @@ function chgValComp(data,id,idComp){
 
 
 function changeCompoActiv(idCompOld){
+  console.log(idCompOld);
 
   document.getElementById('idCompoOld').value = idCompOld;
 }
@@ -83,7 +103,6 @@ $(document).on('click','#btnChangeCompActiv',function(){
   let idCompoOld = document.getElementById('idCompoOld').value;
   let idEquip = document.getElementById('hidIdEquip').value;
   let compos = [];
-  let idActiv = $('#hidIdActiv').value;
     
     $(".chk-compo").each(function(index) {
         if( $(this).prop('checked') ){
@@ -121,7 +140,7 @@ function changeComponentVisual(idEquip,idCompo,idCompoOld){
 
   let contenedor = $('#fldCont'+idCompoOld);
   let visualizacion = true;
-
+  
 
   let args = { 'ideq' : idEquip,
                 'idco' : idCompo,
@@ -135,8 +154,8 @@ function changeComponentVisual(idEquip,idCompo,idCompoOld){
   }
 
   let conf = {
-    'tarmsg'  : 'contMsg'+idCompoOld,
-    'tarow'   : 'rowMsg'+idCompoOld,
+    'tarmsg'  : 'contMsg'+idCompo,
+    'tarow'   : 'rowMsg'+idCompo,
     'msg'     : 'Novedad actualizada exitosamente'
   };
 
@@ -150,7 +169,9 @@ function changeComponentVisual(idEquip,idCompo,idCompoOld){
     cache: false, // Appends _={timestamp} to the request query string
     success: function($dres) {
       contenedor.html($dres)
-      alertCustom(conf);
+      $("#rowMsg"+idCompoOld).attr("id","rowMsg"+idCompo);
+      $("#contMsg"+idCompoOld).attr("id","contMsg"+idCompo);
+      alertCustom(conf)
     }
   });
 
@@ -324,7 +345,7 @@ $(document).on('click','#btnAddTec',function(){
   let idt = $('#slcTecnico').val(), idf = $('#hidCurLinTec').val(), cmb = $("#slcTecnico option:selected").text().split("-"), 
       ced = cmb[1], nom = cmb[0], gru = $('#txtGrupo').val(), por = $('#txtPorPar').val();
 
-
+  
   if( ced.length != 0 && nom.length != 0 && gru.length != 0 && por.length != 0 ){
 
     if( idf.length == 0 ){
@@ -338,7 +359,7 @@ $(document).on('click','#btnAddTec',function(){
 
       lin += '<tr id="trTecTab'+flt+'">';
         lin += '<td id="tdCeduTecTab'+flt+'" class="text-center">'+ced+hid+'</td>';
-        lin += '<td id="tdNombTecTab'+flt+'">'+nom+'</td>';
+        lin += '<td id="tdNombTecTab'+flt+'" class="text-center">'+nom+'</td>';
         lin += '<td id="tdGrupTecTab'+flt+'" class="text-center">'+gru+'</td>';
         lin += '<td id="tdPorcTecTab'+flt+'" class="text-center">'+por+'</td>';
         lin += '<td class="text-center">'+btn+'</td>';
@@ -364,8 +385,11 @@ $(document).on('click','#btnAddTec',function(){
     renderDTParam('#tabTecs');
 
   }
+  
+
 
 });
+
 
 // Seleccionar técnico a editar
 $(document).on('click','.edit-dty-tec',function(e){
@@ -383,18 +407,24 @@ $(document).on('click','.edit-dty-tec',function(e){
   $('#btnAddTec').removeClass('btn-info').addClass('btn-success');
   $('#btnAddTec').html('<i class="fa fa-save"></i>');
 
+  readTabTecs();
+
 });
 
 // Seleccionar técnico a borrar
 $(document).on('click','.dele-dty-tec',function(e){
 
   e.preventDefault();
-
-  if( confirm('¿Desea eliminar este técnico?') ){
-    let idfila = $(this).attr('idfila');
-    $('#trTecTab'+idfila).remove();
-    readTabTecs();
-  }
+    if( confirm('¿Desea eliminar este técnico?') ){
+      let idfila = $(this).attr('idfila');
+      destroyTableParam('#tabTecs');
+      $('#trTecTab'+idfila).remove();
+      readTabTecs();
+      setTimeout(() => {
+        renderDTParam('#tabTecs');
+    }, 300);
+  }  
+  
 
 });
 
@@ -413,15 +443,20 @@ function cleanTecs(){
 function readTabTecs(){
 
   let tecs = [];
+  let vtot = 0;
 
   $("#tabtecs tr").each(function(i) {
+      
       tecs.push({ 
           'idetec':$(this).find('td:eq(0) input:eq(1)').val(),
           'portec':$(this).find('td:eq(3)').text()
       });
+      vtot = vtot + Number($(this).find('td:eq(3)').text());
       $('#hidVlsTecs').val(JSON.stringify(tecs));
+      
   });
-
+  $('#percentajeTecs').html(vtot);
+  $('#percentajeTecs').val(vtot);
 }
 
 // Tab con ENTER en el campo de cédula
@@ -560,11 +595,11 @@ $(document).on('click','#btnAddEle',function(){
           hid += '<input type="hidden" name="hidCateComTab'+flc+'" id="hidCateComTab'+flc+'" value="'+cat+'">';
 
       lin += '<tr id="trComTab'+flc+'">';
-        lin += '<td id="tdDescComTab'+flc+'">'+lco+hid+'</td>';
+        lin += '<td id="tdDescComTab'+flc+'" class="text-center">'+lco+hid+'</td>';
         lin += '<td id="tdCantComTab'+flc+'" class="text-center">'+can+'</td>';
         lin += '<td id="tdPnumComTab'+flc+'" class="text-center">'+pnu+'</td>';
-        lin += '<td id="tdVuniComTab'+flc+'" class="text-right">$ '+vun+'</td>';
-        lin += '<td id="tdTotaComTab'+flc+'" class="text-right">$ '+vun*can+'</td>';
+        lin += '<td id="tdVuniComTab'+flc+'" class="text-center">$ '+vun+'</td>';
+        lin += '<td id="tdTotaComTab'+flc+'" class="text-center">$ '+vun*can+'</td>';
         lin += '<td class="text-center">'+btn+'</td>';
       lin += '</tr>';
 
@@ -600,7 +635,7 @@ $(document).on('click','.edit-dty-com',function(e){
 
   e.preventDefault();
 
-  let idfila = $(this).attr('idfila');hidCurIdCom
+  let idfila = $(this).attr('idfila');
 
   let idc = $('#hidCurIdComTab'+idfila).val(), idf = $('#hidCurLinComTab'+idfila).val(), pnu = $('#tdPnumComTab'+idfila).text(), 
       tip = $('#hidTipoComTab'+idfila).val(), fam = $('#hidFamiComTab'+idfila).val(), cat = $('#hidCateComTab'+idfila).val(),
@@ -644,25 +679,7 @@ function cleanComps(){
 }
 
 // Leer datos de la tabla de componentes, repuestos y servicios
-function readTabTecs(){
 
-  let comps = [];
-  let vtot = 0;
-
-  $("#tpartes tr").each(function(i) {
-    comps.push({ 
-        'idecom':$(this).find('td:eq(0) input:eq(1)').val(),
-        'cancom':$(this).find('td:eq(1)').text(),
-        'vuncom':$(this).find('td:eq(3)').text().replace("$ ",""),
-        'vtocom':$(this).find('td:eq(4)').text().replace("$ ","")
-    });
-    vtot = vtot + parseFloat($(this).find('td:eq(4)').text().replace("$ ",""));
-    $('#hidVlsComps').val(JSON.stringify(comps));
-  });
-
-  $('#totales').html(vtot);
-
-}
 
 // Leer datos de la tabla de componentes, repuestos y servicios
 function readTabComps(){
@@ -895,16 +912,7 @@ $(document).on('click','#btnSaveAct',function(){
 
 $(document).on('click','#btnSaveMmto',function(){
   
-  let tecs = [];
-
-  $("#tabtecs tr").each(function(i) {
-    tecs.push({ 
-        'idetec':$(this).find('td:eq(0) input:eq(1)').val(),
-        'portec':$(this).find('td:eq(3)').text()
-    });
-    $('#hidVlsTecs').val(JSON.stringify(tecs));
-  });
-
+  readTabTecs();
   readTableComp();
   readTabComps();
   let hidIdvalid
@@ -953,8 +961,17 @@ $(document).on('click','#btnSaveMmto',function(){
   
   let total =  checkboxes.length - checkboxesVerified.length;
   if (total > 1){
-    validChecks(total);
+    total = 'Faltan '+total+' componentes por revisar.';
+    validMsgcustom(total);
     cont = 1;
+  }
+  let contPorcenTec = $("#percentajeTecs").val();
+  if(contPorcenTec === 100){
+    console.log("ok");
+  }else if(contPorcenTec < 100 || contPorcenTec > 100){
+    total = 'El valor '+contPorcenTec+' no corresponde con el requisito del 100%.';
+    validMsgcustom(total);
+    
   }
 
     if(cont == 0){
@@ -1041,11 +1058,11 @@ $(document).on('click','#btnSaveMmto',function(){
     }
 });
 
-function validChecks(data){
+function validMsgcustom(data){
   let conf = {
     'tarmsg'  : 'contMsgComponents',
     'tarow'   : 'rowMsgComponents',
-    'msg'     : 'Faltan '+data+' componentes por revisar.'
+    'msg'     : data
   };
     alertCustom(conf);
   

@@ -47,8 +47,7 @@
                         AND a.idTypeAct = t.id
                         AND e.id = a.idEquip 
                         AND tec_a.idactiv = a.id 
-                        AND tech.id = tec_a.idtech
-                        GROUP BY a.id";
+                        AND tech.id = tec_a.idtech";
 
             $dp = array();
             
@@ -141,6 +140,8 @@
 
             }
 
+            $sql .= " GROUP BY a.id ";
+
             $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
             $ccols = array(0,1,2,6,7);
             echo $this->rndr->table_html($aw, $ccols, 'tabHtml');
@@ -155,11 +156,12 @@
                 'data' => array(
                     'header'	    =>  $this->rndr->renderHeader('Gestionar mantenimientos'),
                     'footer'        =>  $this->rndr->renderFooter(EMP_NAME,YEARCOPY),
+                    'hidIdActiv'       =>  self::lastReg(),
                     'hidIdEquip'       =>  $lbl['ideq'],
                     'idsite'        =>  $lbl['sid'],
                     'eqlabel'       =>  $lbl['lbl'],
                     'horomet'       =>  $lbl['hor'],
-                    'accorde'       =>  self::collapseData($data),
+                    'accorde'       =>  self::collapseData($data,self::lastReg()),
                     'locatio'       =>  self::locations(array('def'=>'','typ'=>'retu','sit'=>$lbl['sid'])),
                     'familia'       =>  self::lists(array('idlst'=>4,'str'=>'SELECCIONE FAMILIA','def'=>'')),
                     'categoria'     =>  self::lists(array('idlst'=>5,'str'=>'SELECCIONE CATEGORÍAS','def'=>'')),
@@ -170,7 +172,9 @@
                 ),
                 'file' => 'html/mmtos/nuevo.html'
             );
-            
+           
+
+
             $sqlComp = "SELECT ec.idCompo, vl.label  
                         FROM " . BD_PREFI . "equip_compos ec, " . BD_PREFI . "components c, " . BD_PREFI . "compo_vals cv,
                         " . BD_PREFI ."valists vl
@@ -198,14 +202,26 @@
             $d['data']['rps'] = self::lstrepos($lbl['ideq']);
             
 
-
-
+           
             
             $this->rndr->setData($d);
             echo $this->rndr->rendertpl();
 
         }
 
+        public function lastReg(){
+            $sqlLastId = "SELECT MAX(id) id FROM tec_activities a WHERE idTypeAct = ?";
+            $reLastId = $this->crud->select_id( $sqlLastId, '2', 'arra');
+            $arLastId = $reLastId['res'];
+            if ($arLastId){
+                $idActiv = ($arLastId['id']+1);
+            }else{
+                $idActiv = 1;
+            }
+           
+            return $idActiv;
+        }
+       
         // Mostrar datos para editar
         public function editar(int $data){
 
@@ -229,8 +245,6 @@
 
 
             $lbl = self::eqlabel($ar['idEquip']);
-
-
             
 
             $d = array(
@@ -248,10 +262,13 @@
                     'idLocation'       =>  $ar['idLocation'],
                     'observaciones'       =>  $ar['observaciones'],
                     'idActiv'       => $data,
+                    'totalCostClient'       => self::totOtros($data),
+                    'totalPercentaje'       => self::totPercentTec($data),
+                    
                     'idsite'        =>  $lbl['sid'],
                     'eqlabel'       =>  $lbl['lbl'],
                     'horomet'       =>  $lbl['hor'],
-                    'accorde'       =>  self::collapseData($ar['idEquip']),
+                    'accorde'       =>  self::collapseData($ar['idEquip'],$data),
                     'locatio'       =>  self::locations(array('def'=>'','typ'=>'retu','sit'=>$lbl['sid'])),
                     'familia'       =>  self::lists(array('idlst'=>4,'str'=>'SELECCIONE FAMILIA','def'=>'')),
                     'categoria'     =>  self::lists(array('idlst'=>5,'str'=>'SELECCIONE CATEGORÍAS','def'=>'')),
@@ -277,20 +294,93 @@
             echo $this->rndr->rendertpl();
 
         }
+        public function totOtros($data){
+            
+            $sql = "SELECT vtotal FROM tec_activ_part_serv taps WHERE taps.idactiv = ?";
+                $dp = array();
+                array_push($dp, ['kpa'=>1,'val'=>$data,'typ'=>'int']);
+                $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
+
+                $ar = $aw['res'];
+                $totalOtros;
+                if($ar){
+                    foreach ($ar as $key => $value) {
+                        $totalOtros += $value['vtotal'];
+                    }
+                }else{
+                    $totalOtros = 0;
+                }
+                
+                return $totalOtros;
+
+        }
+
+        public function totPercentTec($data){
+            
+            $sql = "SELECT SUM(parper) total FROM `tec_activ_techs` at WHERE at.`idactiv` = ?";
+            
+            $aw = $this->crud->select_id($sql, $data, 'arra');
+
+            $ar = $aw['res'];
+            if($ar){
+                $totalOtros = $ar['total'];
+            }else{
+                $totalOtros = 0;
+            }
+            
+            return($totalOtros);
+
+        }
+        
 
         public function editarCompAsync(array $data){
-           
-            $info['valField'] = $data['valor'];
-            $info['usu_mod'] = $this->seda['idu'];
-            $info['fec_mod'] = date('Y-m-d H:i:s');
-            $info['ip_mod']  = Firewall::ipCatcher();
 
-            $where = array('idField'=>$data['idField'],
-                            'idComponent'=>$data['idCompo']);
-
-            $resp = $this->crud->update($info,BD_PREFI.'compo_vals',$where);
-           
-
+            print_r($data);
+            
+            if($data['idActiv']){
+                $sql = "SELECT * FROM tec_activ_comp WHERE idactiv = ? AND idcomp = ? ";
+                $dp = array();
+                array_push($dp, ['kpa'=>1,'val'=>$data['idActiv'],'typ'=>'int']);
+                array_push($dp, ['kpa'=>2,'val'=>$data['idCompo'],'typ'=>'int']);
+                $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
+                $ar = $aw['res'];
+                
+                if($ar){
+                    $info['observ'] = $data['valor'];
+                    $info['usu_mod'] = $this->seda['idu'];
+                    $info['fec_mod'] = date('Y-m-d H:i:s');
+                    $info['ip_mod']  = Firewall::ipCatcher();
+        
+                    $where = array('idactiv'=>$data['idActiv'],
+                                    'idcomp'=>$data['idCompo']);
+        
+                    $resp = $this->crud->update($info,BD_PREFI.'activ_comp',$where);
+                    print_r($resp);
+                }else{
+                    $infr['idcomp'] = $data['idCompo'];
+                    $infr['idactiv'] = $data['idActiv'];
+                    $infr['observ'] = $data['valor'];
+                    $infr['edo_reg'] = 1;
+                    $infr['usu_crea'] = $this->seda['idu'];
+                    $infr['fec_crea'] = date('Y-m-d H:i:s');
+                    $infr['ip_crea']  = Firewall::ipCatcher();
+                    
+                    // inserta  relacion del componente nuevo con el equipo   
+    
+                    $rr = $this->crud->insert($infr,BD_PREFI.'activ_comp');
+                    print_r($rr);
+                }
+            }else{
+                $info['valField'] = $data['valor'];
+                $info['usu_mod'] = $this->seda['idu'];
+                $info['fec_mod'] = date('Y-m-d H:i:s');
+                $info['ip_mod']  = Firewall::ipCatcher();
+    
+                $where = array('idField'=>$data['idField'],
+                                'idComponent'=>$data['idCompo']);
+    
+                $resp = $this->crud->update($info,BD_PREFI.'compo_vals',$where);
+            }
         }
 
         public function changeCompo(array $data){
@@ -388,10 +478,12 @@
 
         public function lstecActiv(int $idActiv){
 
-            $sql = "SELECT t.document, t.name, t.idGroup , at.parper 
-                FROM tec_techs t, tec_activities a , tec_activ_techs at 
+            $sql = "SELECT t.id, t.document, t.name, v.label , at.parper 
+                FROM tec_techs t, tec_activities a , tec_activ_techs at , tec_valists v
                     WHERE a.id = at.idActiv 
                         and at.idTech = t.id 
+                        and t.idGroup = v.id
+                        and v.idlist = 9
                         and a.id = ?
                         and at.edo_reg = ?";
                     
@@ -406,20 +498,18 @@
             
             foreach ($ar as $k => $v) {
 
-                $btns = '<button class="btn btn-info btn-sm edit-dty-rep" type="button" idfila="'.$k.'" idx="'.$v['idEqRep'].'"><i class="fa fa-pencil"></i></button>&nbsp;&nbsp;';
-		        $btns .= '<button class="btn btn-danger btn-sm dele-dty-rep" type="button" idfila="'.$k.'" idx="'.$v['idEqRep'].'"><i class="fa fa-times"></i></button>';
+                $btns = '<button class="btn btn-info btn-sm edit-dty-tec" type="button" idfila="'.$k.'"><i class="fa fa-pencil"></i></button>&nbsp;&nbsp;';
+		        $btns .= '<button class="btn btn-danger btn-sm dele-dty-tec" type="button" idfila="'.$k.'"><i class="fa fa-times"></i></button>';
                 
-                $hids = '<input type="hidden" name="hidFami'.$k.'" id="hidFami'.$k.'" value="'.$v['document'].'">';
-                $hids .= '<input type="hidden" name="hidCats'.$k.'" id="hidCats'.$k.'" value="'.$v['name'].'">';
-                $hids .= '<input type="hidden" name="hidRepu'.$k.'" id="hidRepu'.$k.'" value="'.$v['idGroup'].'">';
-                $hids .= "<input type='hidden' name='hidVals".$k."' id='hidVals".$k."' value='".$v['parper']."'>";
+                $hids = '<input type="hidden" name="hidCurLinTecTab'.$k.'" id="hidCurLinTecTab'.$k.'" value="'.$k.'">';
+                $hids .= '<input type="hidden" name="hidCurIdTecTab'.$k.'" id="hidCurIdTecTab'.$k.'" value="'.$v['id'].'">';
                 
-                $tr .= '<tr id="tr'.$k.'">';
+                $tr .= '<tr id="trTecTab'.$k.'">';
                     //$tr .= '<td id="tdItem'.$k.'" class="text-center">'.$hids.$v['repu'].'</td>';
-                    $tr .= '<td id="tdRepu'.$k.'" class="text-center">'.$v['document'].'</td>';
-                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['name'].'</td>';
-                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['idGroup'].'</td>';
-                    $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['parper'].'</td>';
+                    $tr .= '<td id="tdCeduTecTab'.$k.'" class="text-center">'.$v['document'].$hids.'</td>';
+                    $tr .= '<td id="tdNombTecTab'.$k.'" class="text-center">'.$v['name'].'</td>';
+                    $tr .= '<td id="tdGrupTecTab'.$k.'" class="text-center">'.$v['label'].'</td>';
+                    $tr .= '<td id="tdPorcTecTab'.$k.'" class="text-center">'.$v['parper'].'</td>';
                     $tr .= '<td class="text-center">'.$btns.'</td>';
                 $tr .= '</tr>';
 
@@ -490,7 +580,7 @@
             $info = array(
                 'idEquip'       =>  $data['idEquip'],
                 'idTypeAct'     =>  2,
-                'idLocation'    =>  $data['slcLocal'],
+                'idLocation'    =>  (int)$data['slcLocal'],
                 'startDate'     =>  $data['txtFecIniMmto'],
                 'endDate'       =>  $data['txtFecFinMmto'],
                 'startHour'     =>  $data['txtHoraInicio'],
@@ -727,8 +817,7 @@
         }
 
         // Acordeón de elementos
-        private function collapseData(int $data){
-
+        private function collapseData(int $data, int $idActiv){
 
             $sqlFth = "SELECT ec.id idreg, ec.idCompo idelem, p.description, p.partserv
                         FROM tec_equip_compos ec, tec_components c, tec_parts p
@@ -772,6 +861,7 @@
                     $fl = $fb['fbox'];
                     $clsOpen = 'openModComp';
                     $fldsCont = 'Comp';
+                    
                     //$fl = $fb;
 
                 } else {
@@ -781,6 +871,15 @@
                     $clsOpen = 'openModRepu';
                     $fldsCont = 'Repu';
                 }
+                
+                $fobserv = self::observCompo(array('idElem'=>$vf['idelem'],'idActiv'=>$idActiv));
+                $obsfld = $fobserv;
+
+                if(!$obsfld){
+                   $obsfld = "";
+                }
+                
+
                 $conttitle = $kf+1;
                 $ac .= '    <div class="card mb-2">
 									
@@ -819,14 +918,15 @@
                                             </div>
 
                                             
-                                            <div class="col-lg-12">
+                                            <div class="col-lg-12 '.$paramP.'">
                                                 <div class="form-group"><label class="form-control-label" for="tarObservElem'.$fldsCont.$vf['idreg'].'">Observación</label>
-                                                    <textarea  class="form-control ctrl-fld" name="tarObservElem'.$fldsCont.$vf['idreg'].'" id="tarObservElem'.$vf['idelem'].'" rows="3"></textarea>                                                </div>
+                                                    <textarea onchange="chgValComp(this.value,this.id,'.$data['idco'].')"  class="form-control ctrl-fld" name="tarObservElem'.$fldsCont.$vf['idreg'].'" id="'.$vf['idelem'].'" rows="3">'.$obsfld.'</textarea>                                                
+                                                </div>
                                             </div>
 
                                         
                                             <div class="col-md-6">
-                                                <button onclick="changeCompoActiv('.$vf['idelem'].')" id="btnChng'.$vf['idelem'].'" type="button" class="btn btn-success btn-sm '.$clsOpen.'" idelem="'.$vf['idelem'].'" idreg="'.$vf['idreg'].'" model="mmtos" method="chngelem">
+                                                <button onclick="changeCompoActiv('.$vf['idelem'].')" id="btnChng'.$vf['idelem'].'" type="button" class="btn btn-success btn-sm '.$clsOpen.'" idelem="'.$vf['idelem'].'" idreg="'.$vf['idreg'].'">
                                                     Cambiar &nbsp;&nbsp;<i class="fa fa-refresh"></i>
                                                 </button>
                                             </div>
@@ -842,6 +942,22 @@
 
             return $ac;
 
+        }
+
+        //Render observaciones
+
+        public function observCompo(array $data){
+         
+            $sql = "SELECT ac.observ  FROM tec_activ_comp ac WHERE ac.idcomp = ? AND ac.idactiv = ? and ac.edo_reg = 1";
+
+            $dp = array();
+            array_push($dp, ['kpa'=>1,'val'=>$data['idElem'],'typ'=>'int']);
+            array_push($dp, ['kpa'=>2,'val'=>$data['idActiv'],'typ'=>'int']);
+            $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
+            $ar = $aw['res'];
+            
+            
+            return($ar[0]['observ']);
         }
 
         // Render de campos de control con valores
@@ -1582,7 +1698,7 @@
                 $tr .= '<tr id="tr'.$k.'">';
                     //$tr .= '<td id="tdItem'.$k.'" class="text-center">'.$hids.$v['repu'].'</td>';
                     $tr .= '<td id="tdItem'.$k.'" class="text-center">'.$hids.'<span class="spanRepu">'.$item.'</span></td>';
-                    $tr .= '<td id="tdRepu'.$k.'">'.$v['lrep'].'</td>';
+                    $tr .= '<td id="tdRepu'.$k.'" class="text-center">'.$v['lrep'].'</td>';
                     $tr .= '<td id="tdFami'.$k.'" class="text-center">'.$v['lfam'].'</td>';
                     $tr .= '<td id="tdCate'.$k.'" class="text-center">'.$v['lcat'].'</td>';
                     $tr .= '<td class="text-center">'.$btns.'</td>';

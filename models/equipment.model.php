@@ -287,33 +287,43 @@
                     );
 
                     $sqlC = "SELECT COUNT(*) cant
-                             FROM tec_equip_compos ec
-                             WHERE ec.idEquip = ?
-                                AND ec.idCompo = ?
-                             LIMIT 1;";
+                            FROM tec_equip_compos ec
+                            WHERE ec.idCompo = ?
+                            AND ec.edo_reg = 1
+                            LIMIT 1";
 
                     $dpc = array();
-                    array_push($dpc, ['kpa'=>1,'val'=>$infc['idEquip'],'typ'=>'int']);
-                    array_push($dpc, ['kpa'=>2,'val'=>$infc['idCompo'],'typ'=>'int']);
+                    array_push($dpc, ['kpa'=>1,'val'=>$infc['idCompo'],'typ'=>'int']);
                     $awc = $this->crud->select_group($sqlC, count($dpc), $dpc, 'arra');
 
+                    
+                
+
                     if( $awc['res'][0]['cant'] > 0 ){
+
+                        
+                        
 
                         $infc['usu_mod'] = $this->seda['idu'];
                         $infc['fec_mod'] = date('Y-m-d H:i:s');
                         $infc['ip_mod']  = Firewall::ipCatcher();
         
-                        $whrc = array('idEquip'=>$infc['idEquip'],'idCompo'=>$infc['idCompo']);
+                        $whrc = array('idCompo'=>$infc['idCompo']);
         
                         $rc = $this->crud->update($infc,BD_PREFI.'equip_compos',$whrc);
         
                     } else {
         
+                       
+
                         $infc['usu_crea'] = $this->seda['idu'];
                         $infc['fec_crea'] = date('Y-m-d H:i:s');
                         $infc['ip_crea']  = Firewall::ipCatcher();
         
                         $rc = $this->crud->insert($infc,BD_PREFI.'equip_compos');
+                        
+                        unset($infc,$whrc,$rc);
+                        
         
                     }
 
