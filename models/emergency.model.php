@@ -1,6 +1,6 @@
 <?php
 
-    class mmtos{
+    class emergency{
         
         public function __construct(array $res){
         	$this->clstr = $res['cleanstr'];
@@ -14,7 +14,7 @@
         public function index(){
         	$d = array(
                 'data' => array(
-                    'header'	=>  $this->rndr->renderHeader('Mantenimientos'),
+                    'header'	=>  $this->rndr->renderHeader('Emergencia'),
                     'footer'	=>  $this->rndr->renderFooter(EMP_NAME,YEARCOPY),
                     'flotas'    =>  self::lists(array('idlst'=>11,'str'=>'SELECCIONE FLOTA','def'=>'')),
                     'marcas'    =>  self::lists(array('idlst'=>2,'str'=>'SELECCIONE MARCA','def'=>'')),
@@ -23,7 +23,7 @@
                     'estados'   =>  self::estados('return',''),
                     'usuario'   =>  $this->seda['idu']
                 ),
-                'file' => 'html/mmtos/index.html'
+                'file' => 'html/emergency/index.html'
             );
 
             $this->rndr->setData($d);
@@ -38,7 +38,7 @@
              $sql = "SELECT  DATE(a.fec_crea) 'Fecha registro',
                         CONCAT(UPPER(ma.label), ' ', UPPER(m.label)) 'Marca/Modelo', e.internalNumber 'Número interno',
                         c.name Cliente, s.name Proyecto, a.startDate 'Fecha inicio', a.endDate 'Fecha fin',
-                        CONCAT('<a idreg=\"',a.id,'\" href=\"editar\" rel=\"mmtos\" action=\"upd\" title=\"Editar Mantenimiento\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-pencil\"></i></a>') MODIFICAR
+                        CONCAT('<a idreg=\"',a.id,'\" href=\"editar\" rel=\"emergency\" action=\"upd\" title=\"Editar Mantenimiento\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-pencil\"></i></a>') MODIFICAR
                     FROM tec_equipment e, tec_valists ma, tec_valists m, tec_sites s, tec_company c, tec_activities a, tec_typeactivity t, tec_activ_techs tec_a, tec_techs tech
                     WHERE e.idModel = m.id
                         AND m.valfather = ma.id
@@ -48,7 +48,7 @@
                         AND e.id = a.idEquip 
                         AND tec_a.idactiv = a.id 
                         AND tech.id = tec_a.idtech
-                        AND t.id = 2";
+                        AND t.id = 5";
 
             $dp = array();
             
@@ -171,7 +171,7 @@
                     'tecnicos'      =>  self::lstec($lbl['sid']),
                     'usuario'       =>  $this->seda['idu'] 
                 ),
-                'file' => 'html/mmtos/nuevo.html'
+                'file' => 'html/emergency/nuevo.html'
             );
            
 
@@ -280,7 +280,7 @@
                     'Listtecnicos'      =>  self::lstec($lbl['sid']),
                     'usuario'       =>  $this->seda['idu'] 
                 ),
-                'file' => 'html/mmtos/editar.html'
+                'file' => 'html/emergency/editar.html'
             );
             
 
@@ -581,7 +581,7 @@
     
             $info = array(
                 'idEquip'       =>  $data['idEquip'],
-                'idTypeAct'     =>  2,
+                'idTypeAct'     =>  5,
                 'idLocation'    =>  (int)$data['slcLocal'],
                 'startDate'     =>  $data['txtFecIniMmto'],
                 'endDate'       =>  $data['txtFecFinMmto'],
@@ -820,7 +820,7 @@
                     'cls'       =>  $cls,
                     'msg'       =>  $msg
                 ),
-                'file' => 'html/mmtos/respsave.html'
+                'file' => 'html/emergency/respsave.html'
             );
 
 
@@ -1148,7 +1148,7 @@
         public function lsteqs(array $data){
 
             $sql = "SELECT e.id ÍTEM, e.internalNumber 'N° INTERNO', UPPER(m.label) MODELO, s.name PROYECTO,
-                        '<a href=\"nuevo\" rel=\"mmtos\" action=\"sel\" title=\"Seleccionar equipo\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-check\"></i></a>' SELECCIONAR
+                        '<a href=\"nuevo\" rel=\"emergency\" action=\"sel\" title=\"Seleccionar equipo\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-check\"></i></a>' SELECCIONAR
 					FROM ".BD_PREFI."equipment e, ".BD_PREFI."valists f, ".BD_PREFI."valists ma, ".BD_PREFI."valists m, ".BD_PREFI."sites s
 					WHERE e.typeEquipamentId = f.id
                         AND e.idModel = m.id

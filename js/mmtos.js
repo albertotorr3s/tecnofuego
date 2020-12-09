@@ -10,7 +10,7 @@ $(document).on('click','#btnNewMmto',function(){
 $(document).on('click','#btnSearchEquip',function(){
     let target = '#'+$(this).attr('target');
     let action = $('#frmModalEquip').attr('action');
-
+    console.log(action)
     let params = {
       'model'  : currentModel,
       'method' : action,
@@ -39,15 +39,21 @@ $(document).on('click','#btnSearchEquip',function(){
 
 function chgValComp(data,id,idComp){
 
+  console.log(data);
+  console.log(id);
+  console.log(idComp);
+
   let idActiv;
   let args;
   let conf;
+  
   if(!idComp){
     if($("#idActiv").val()){
       idActiv = $("#idActiv").val();
     }else if($("#hidIdActiv").val()){
       idActiv = $("#hidIdActiv").val();
     }
+    console.log(idActiv);
     args = {'valor' : data,
           'idCompo': id,
           'idActiv': idActiv}
@@ -106,7 +112,8 @@ $(document).on('click','#btnChangeCompActiv',function(){
     
     $(".chk-compo").each(function(index) {
         if( $(this).prop('checked') ){
-            compos.push($(this).val());            
+            compos.push($(this).val());
+            $(this).css("display","none");
         }
     });
 
@@ -127,7 +134,6 @@ $(document).on('click','#btnChangeCompActiv',function(){
       data: params,
       cache: false, // Appends _={timestamp} to the request query string
       success: function($dres) {
-        console.log($dres);
         $("#modCompos").modal('hide');
         changeComponentVisual(idEquip,parseInt(compos),idCompoOld);
             
@@ -269,7 +275,7 @@ function loadNew(met,arg){
   var target = '#module-cont';
 
   var params = {
-    'model'   :   'mmtos',
+    'model'   :   currentModel,
     'method'  :   met,
     'args'    :   arg
   };
@@ -413,17 +419,68 @@ $(document).on('click','.edit-dty-tec',function(e){
 
 // Seleccionar técnico a borrar
 $(document).on('click','.dele-dty-tec',function(e){
-
+  let detTecs;
   e.preventDefault();
     if( confirm('¿Desea eliminar este técnico?') ){
       let idfila = $(this).attr('idfila');
+      detTecs = $("#hidCurIdTecTab"+idfila).val();
       destroyTableParam('#tabTecs');
       $('#trTecTab'+idfila).remove();
       readTabTecs();
       setTimeout(() => {
         renderDTParam('#tabTecs');
     }, 300);
-  }  
+  } 
+  let params = {
+    'model'   : 'mmtos',
+    'method'  : 'deleteTecs',
+    'args'    : {
+      'idTech' : detTecs,
+      'idActiv' : $('#idActiv').val()
+    }
+  };
+
+  $.ajax({
+    url: 'index.php',
+    type: 'POST',
+    dataType: 'json',
+    data: params,
+    cache: false, // Appends _={timestamp} to the request query string
+    success: function($dres) {
+      console.log($dres);
+    }
+ 
+  }); 
+  
+
+});
+
+// Seleccionar técnico a borrar
+$(document).on('click','.dele-dty-rep',function(e){
+  let delOtr;
+  
+  delOtr = $(this).attr('idx');
+
+  let params = {
+    'model'   : 'mmtos',
+    'method'  : 'deleteRepo',
+    'args'    : {
+      'idRepo' : delOtr,
+      'idActiv' : $('#idActiv').val()
+    }
+  };
+
+  $.ajax({
+    url: 'index.php',
+    type: 'POST',
+    dataType: 'json',
+    data: params,
+    cache: false, // Appends _={timestamp} to the request query string
+    success: function($dres) {
+      console.log($dres);
+    }
+ 
+  }); 
   
 
 });
@@ -663,6 +720,7 @@ $(document).on('click','.dele-dty-com',function(e){
     $('#trComTab'+idfila).remove();
     readTabComps();
   }
+  
 
 });
 
@@ -911,7 +969,6 @@ $(document).on('click','#btnSaveAct',function(){
 });
 
 $(document).on('click','#btnSaveMmto',function(){
-  
   readTabTecs();
   readTableComp();
   readTabComps();
@@ -956,9 +1013,8 @@ $(document).on('click','#btnSaveMmto',function(){
   if($('#idActiv').val()){
      hidIdvalid = $('#idActiv').val();
   }
-  var checkboxes = document.querySelectorAll('input[type=checkbox]')
-  var checkboxesVerified = document.querySelectorAll('input[type=checkbox]:checked')
-  
+  var checkboxes = document.querySelectorAll('.form-check input[type=checkbox]')
+  var checkboxesVerified = document.querySelectorAll('.form-check input[type=checkbox]:checked')
   let total =  checkboxes.length - checkboxesVerified.length;
   if (total > 1){
     total = 'Faltan '+total+' componentes por revisar.';
@@ -1013,7 +1069,7 @@ $(document).on('click','#btnSaveMmto',function(){
       };
     
       let params = {
-        'model'  : 'mmtos',
+        'model'  : $("#btnSaveMmto").attr("model"),
         'method' : 'guardar',
         'args'   :  args
       };

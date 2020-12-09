@@ -400,7 +400,7 @@ var fila = $("#detRepus tr").length;
 function nuevaFilaRep(valo){
 
     let btns = '<button class="btn btn-info btn-sm edit-dty-rep" type="button" idfila="'+fila+'"><i class="fa fa-pencil"></i></button>&nbsp;&nbsp;';
-    btns += '<button class="btn btn-danger btn-sm dele-dty-rep" type="button" idfila="'+fila+'"><i class="fa fa-times"></i></button>';
+    btns += '<button class="btn btn-danger btn-sm dele-dty-rep dele-dty-rep type="button" idfila="'+fila+'"><i class="fa fa-times"></i></button>';
 
     let repos = [];
 
