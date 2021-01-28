@@ -258,7 +258,6 @@ class components
     {
 
         $data = json_decode($_POST['args']);
-
         $info = array(
             'siteId'        => (empty($data->slcProyecto)) ? $data->hidProyecto : $data->slcProyecto,
             'idComponent'   =>  $data->slcComponente,
@@ -282,10 +281,10 @@ class components
                 $idco = $data->hidId;
 
                 $resp = $this->crud->update($info, BD_PREFI . 'components', $where);
+                
+                if ($data->slcEstado != 2){
 
-                if ($data->slcEstado == 0 || $data->slcEstado = 1){
-
-                   
+    
 
                     $infc = array(
                         'idEquip'   =>  null,
