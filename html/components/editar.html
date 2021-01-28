@@ -96,6 +96,64 @@
 		});
 
 	});
+	$(document).on('blur','input[idfi=31], input[idfi=34]',function(){
+
+		let idfi = parseInt($(this).attr('idfi')), valu = $(this).val(), proy = '', elem = '', comp = $('#slcComponente').val();
+
+		switch(idfi){
+
+			case 31: 
+				proy = $('#slcProyecto').val(); 
+				elem = 'consecutivo';
+			break;
+
+			case 34: 
+				proy = ''; 
+				elem = 'serial';
+			break;
+
+		}
+
+		var params = {
+			'model'  : 'components',
+			'method' : 'vercods',
+			'args'   : {
+				'idfi' : idfi,
+				'valu' : valu,
+				'comp' : comp,
+				'proy' : proy
+			}
+		};
+
+		$.ajax({
+			url: 'index.php',
+			type: 'POST',
+			dataType: 'text',
+			data: params,
+			cache: false, // Appends _={timestamp} to the request query string
+			success: function($dres) {
+				console.log($dres);
+				if( parseInt($dres) >= 1 ){
+
+					let conf = {
+                        'tarmsg'  : 'contMsg',
+                        'tarow'   : 'rowMsg',
+                        'msg'     : 'Este '+elem+' ya existe en la base de datos. Por favor verifique la información ingresada.'
+                    };
+
+                    alertCustom(conf);
+
+					$("#btnSave").addClass('disabled');
+					$('#btnSave').prop('disabled', true);
+					
+				} else {
+					$("#btnSave").removeClass('disabled');
+                    $('#btnSave').prop('disabled', false);
+				}
+			}
+		});
+
+	});
 
 </script>
 
@@ -137,7 +195,7 @@
 						<input type="hidden" name="hidCliente" id="hidCliente" class="clihid">
 						</div>
 					</div>
-			
+			 
 					<div class="col-lg-8">
 						<div class="form-group">
 						<label class="form-control-label">Proyecto/Mina <span class="text-danger">*</span></label>
@@ -163,7 +221,7 @@
 							<select id="slcFamilia" name="slcFamilia" class="form-control" required>{familias}</select>
 						</div>
 					</div>
-
+ 
 					<div class="col-lg-4">
 						<div class="form-group">
 							<label class="form-control-label">Categoría <span class="text-danger">*</span></label>

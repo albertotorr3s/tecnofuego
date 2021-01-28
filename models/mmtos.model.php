@@ -1401,12 +1401,11 @@
 
         // Completar datos del servicio, parte o repuesto seleccionado
         public function compldata(array $data){
+         
 
-            $sql = "SELECT p.partNum, v.value valproj
-                    FROM ".BD_PREFI."parts p, ".BD_PREFI."parts_vals v
-                    WHERE v.idPart = p.id
-                        AND p.id = ?
-                        AND v.idProject = ?
+            $sql = "SELECT p.partNum, p.value valproj
+                    FROM ".BD_PREFI."parts p
+                    WHERE p.id = ?
                         AND p.edo_reg = ? ;";
 
             /*if( $data['type'] != 'S' ){
@@ -1427,8 +1426,7 @@
 
             $dp = array();
             array_push($dp, ['kpa'=>1,'val'=>$data['elem'],'typ'=>'int']);
-            array_push($dp, ['kpa'=>2,'val'=>$data['proj'],'typ'=>'int']);
-            array_push($dp, ['kpa'=>3,'val'=>1,'typ'=>'int']);
+            array_push($dp, ['kpa'=>2,'val'=>1,'typ'=>'int']);
             /*if( $data['type'] != 'S' ){
                 array_push($dp, ['kpa'=>4,'val'=>$data['equi'],'typ'=>'int']);
                 array_push($dp, ['kpa'=>5,'val'=>$data['equi'],'typ'=>'int']);

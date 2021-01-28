@@ -616,6 +616,7 @@ $(document).on('change','#slcElemento',function(){
     data: params,
     cache: false, // Appends _={timestamp} to the request query string
     success: function($dres) {
+      console.log($dres);
       $('#txtParNum').val($dres.partNum);
       $('#hidValUnit').val($dres.valproj);
     }
@@ -631,9 +632,11 @@ var flc = 0;
 // Agregar elemento servicio, componente o repuesto
 $(document).on('click','#btnAddEle',function(){
 
+
   let idco = $('#hidCurIdCom').val(), idc = $('#hidCurLinCom').val(), pnu = $('#txtParNum').val(), tip = $('#slcTipo').val(), 
       fam = $('#slcFamilia').val(), cat = $('#slcCategoria').val(), com = $('#slcElemento').val(), can = $('#txtCantidad').val(),
       lco = $('#slcElemento option:selected').text(), vun = $('#hidValUnit').val();
+
 
   if( pnu.length != 0 && tip.length != 0 && fam.length != 0 && cat.length != 0 && com.length != 0 && can.length != 0 ){
     
@@ -1027,6 +1030,7 @@ $(document).on('click','#btnSaveMmto',function(){
   }else if(contPorcenTec < 100 || contPorcenTec > 100){
     total = 'El valor '+contPorcenTec+' no corresponde con el requisito del 100%.';
     validMsgcustom(total);
+    cont = 1;
     
   }
 
