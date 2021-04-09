@@ -746,7 +746,7 @@ function cleanComps(){
 function readTabComps(){
 
   let comps = [];
-  let vtot = 0;
+  let vtot = 0; 
 
   $("#tpartes tr").each(function(i) {
     comps.push({ 
@@ -1019,7 +1019,7 @@ $(document).on('click','#btnSaveMmto',function(){
   var checkboxes = document.querySelectorAll('.form-check input[type=checkbox]')
   var checkboxesVerified = document.querySelectorAll('.form-check input[type=checkbox]:checked')
   let total =  checkboxes.length - checkboxesVerified.length;
-  if (total > 1){
+  if (total >= 1){
     total = 'Faltan '+total+' componentes por revisar.';
     validMsgcustom(total);
     cont = 1;
@@ -1038,6 +1038,7 @@ $(document).on('click','#btnSaveMmto',function(){
       let hidId = hidIdvalid ;
       let idEquip = $('#hidIdEquip').val() ;
       let hidVlsTecs = $('#hidVlsTecs').val();
+      let idActivnew = $('#idActivnew').val();
       let hidVlsComp = $('#hidVlsComp').val();
       let hidVlsReps = $('#hidVlsReps').val();
       let hidVlsDelComp = $('#hidVlsDelComp').val();
@@ -1051,12 +1052,15 @@ $(document).on('click','#btnSaveMmto',function(){
       let txtHoroFin = $('#txtHoroFin').val();
       let slcLocal = $('#slcLocal').val(); 
       let tarObservActiv = $('#tarObservActiv').val();
-    
+      
+      
+     
       
       let args = {
         'idEquip':idEquip,
         'hidId':hidId,
         'hidVlsTecs':hidVlsTecs,
+        'idActivnew':idActivnew,
         'hidVlsComp':hidVlsComp,
         'hidVlsReps':hidVlsReps,
         'hidVlsDelComp':hidVlsDelComp,

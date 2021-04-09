@@ -269,6 +269,7 @@
                     'idsite'        =>  $lbl['sid'],
                     'eqlabel'       =>  $lbl['lbl'],
                     'horomet'       =>  $lbl['hor'],
+                    'activities'       =>  self::Activities(array('def'=>$ar['idTypeAct'],'typ'=>'retu')),
                     'accorde'       =>  self::collapseData($ar['idEquip'],$data),
                     'locatio'       =>  self::locations(array('def'=>$ar['idLocation'],'typ'=>'retu','sit'=>$lbl['sid'])),
                     'familia'       =>  self::lists(array('idlst'=>4,'str'=>'SELECCIONE FAMILIA','def'=>'')),
@@ -581,7 +582,7 @@
     
             $info = array(
                 'idEquip'       =>  $data['idEquip'],
-                'idTypeAct'     =>  1,
+                'idTypeAct'     =>  $data['idActivnew'],
                 'idLocation'    =>  (int)$data['slcLocal'],
                 'startDate'     =>  $data['txtFecIniMmto'],
                 'endDate'       =>  $data['txtFecFinMmto'],
@@ -1282,6 +1283,30 @@
                 $sl = '';
             } else {
                 $sl = $this->rndr->renderSelect($ar, 'SELECCIONE LOCALIZACIÓN', $conf['def']);
+            }
+
+            if( $conf['typ'] == 'echo' ){
+                echo $sl;
+            } else {
+                return $sl;
+            }
+
+        }
+        private function Activities(array $conf){
+
+            $sql = "SELECT tpa.id, tpa.name label
+                    FROM ".BD_PREFI."typeactivity tpa
+                        WHERE tpa.edo_reg = ?;";
+
+            $dp = array();
+            array_push($dp, ['kpa'=>1,'val'=>1,'typ'=>'int']);
+            $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
+            $ar = $aw['res'];
+
+            if( empty($ar) ){
+                $sl = '';
+            } else {
+                $sl = $this->rndr->renderSelect($ar, 'SELECCIONE ACTIVIDAD', $conf['def']);
             }
 
             if( $conf['typ'] == 'echo' ){

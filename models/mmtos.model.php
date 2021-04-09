@@ -31,7 +31,9 @@
 
         }
        
-        
+        public function borrar(int $data){
+            print_r($data);
+        }
 
         // Listar mantenimientos y servicios  
         public function listar(array $data){ 
@@ -243,7 +245,7 @@
 
                     $re = $this->crud->select_id($sql, $data, 'arra');
                     $ar = $re['res'];
-
+           
 
             $lbl = self::eqlabel($ar['idEquip']);
             
@@ -270,6 +272,7 @@
                     'eqlabel'       =>  $lbl['lbl'],
                     'horomet'       =>  $lbl['hor'],
                     'accorde'       =>  self::collapseData($ar['idEquip'],$data),
+                    'activities'       =>  self::Activities(array('def'=>$ar['idTypeAct'],'typ'=>'retu')),
                     'locatio'       =>  self::locations(array('def'=>$ar['idLocation'],'typ'=>'retu','sit'=>$lbl['sid'])),
                     'familia'       =>  self::lists(array('idlst'=>4,'str'=>'SELECCIONE FAMILIA','def'=>'')),
                     'categoria'     =>  self::lists(array('idlst'=>5,'str'=>'SELECCIONE CATEGORÍAS','def'=>'')),
@@ -337,7 +340,6 @@
 
         public function editarCompAsync(array $data){
 
-           print_r($data);
             
             if($data['idActiv']){
                 $sql = "SELECT * FROM tec_activ_comp WHERE idactiv = ? AND idcomp = ? ";
@@ -577,11 +579,11 @@
 
         // Acción de guardar
         public function guardar(array $data){
-
+            
     
             $info = array(
                 'idEquip'       =>  $data['idEquip'],
-                'idTypeAct'     =>  2,
+                'idTypeAct'     =>  $data['idActivnew'],
                 'idLocation'    =>  (int)$data['slcLocal'],
                 'startDate'     =>  $data['txtFecIniMmto'],
                 'endDate'       =>  $data['txtFecFinMmto'],
@@ -1291,6 +1293,30 @@
             }
 
         }
+        private function Activities(array $conf){
+
+            $sql = "SELECT tpa.id, tpa.name label
+                    FROM ".BD_PREFI."typeactivity tpa
+                        WHERE tpa.edo_reg = ?;";
+
+            $dp = array();
+            array_push($dp, ['kpa'=>1,'val'=>1,'typ'=>'int']);
+            $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
+            $ar = $aw['res'];
+
+            if( empty($ar) ){
+                $sl = '';
+            } else {
+                $sl = $this->rndr->renderSelect($ar, 'SELECCIONE ACTIVIDAD', $conf['def']);
+            }
+
+            if( $conf['typ'] == 'echo' ){
+                echo $sl;
+            } else {
+                return $sl;
+            }
+
+        }
 
         // Datos del técnico buscado
         public function tecdata(int $data){
@@ -1754,10 +1780,10 @@
         public function savemmtos(array $data){
 
            
-
+            
             $info = array(
                 'idEquip'       =>  $data['idEquip'],
-                'idTypeAct'     =>  2,
+                'idTypeAct'     =>  $data['idActivnew'],
                 'idLocation'    =>  $data['slcLocal'],
                 'startDate'     =>  $data['txtFecIniMmto'],
                 'endDate'       =>  $data['txtFecFinMmto'],

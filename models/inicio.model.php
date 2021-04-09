@@ -317,7 +317,7 @@
 
             $sql = "SELECT /*a.id Ítem, */DATE(a.fec_crea) 'Fecha registro', t.name Actividad, 
                            CONCAT(UPPER(ma.label), ' ', UPPER(m.label)) 'Marca/Modelo', e.internalNumber 'Número interno',
-                           c.name Cliente, s.name Proyecto, a.startDate 'Fecha inicio', a.endDate 'Fecha fin',
+                           c.name Cliente, s.name Proyecto, a.startDate 'Fecha inicio', a.endDate 'Fecha fin', DATE(a.fec_crea)  'Fecha Creación',
                            '<a href=\"prntrep\" rel=\"repos\" action=\"prnt\" title=\"Imprimir reporte\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-print\"></i></a>' Reporte
                     FROM tec_equipment e, tec_valists ma, tec_valists m, tec_sites s, tec_company c, tec_activities a, tec_typeactivity t
                     WHERE e.idModel = m.id
