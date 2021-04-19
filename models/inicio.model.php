@@ -27,7 +27,7 @@
                 $footer = $this->rndr->renderFooter(EMP_NAME,YEARCOPY);
                 $lnkfoto = '<img src="'.URL_BASE.'img/pics/'.$_SESSION['u']['fot'].'" class="img-fluid ava-thepic rounded-circle">';
                 $foto = (!empty($_SESSION['u']['fot'])) ? $lnkfoto : '<img src="img/avatar-1.jpg" class="img-fluid rounded-circle">';
-                $lactiv = self::listactiv($data);
+                $lactiv = self::listactiv();
                 $cntmmto = self::cantactiv(2);
                 $cntinsp = self::cantactiv(1);
                 $cntreca = self::cantactiv(3);
@@ -313,20 +313,54 @@
         }
 
         // Listado de actividades por mina o todas según sea el usuario loggeado
-        private function listactiv(array $data){
-            print($data);
+        private function listactiv(){
             $sql = "SELECT /*a.id Ítem, */DATE(a.fec_crea) 'Fecha registro', t.name Actividad, 
                            CONCAT(UPPER(ma.label), ' ', UPPER(m.label)) 'Marca/Modelo', e.internalNumber 'Número interno',
                            c.name Cliente, s.name Proyecto, a.startDate 'Fecha inicio', a.endDate 'Fecha fin',
-                           '<a href=\"prntrep\" rel=\"repos\" action=\"prnt\" title=\"Imprimir reporte\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-print\"></i></a>' Acciones,
-                           CONCAT('<a idreg=\"',a.id,'\" href=\"editar\" rel=\"mmtos\" action=\"upd\" title=\"Editar Mantenimiento\" class=\"btn btn-sm btn-warning\"><i class=\"fa fa-pencil text-white\"></i></a>') MODIFICAR
-                    FROM tec_equipment e, tec_valists ma, tec_valists m, tec_sites s, tec_company c, tec_activities a, tec_typeactivity t
+                           '<a href=\"prntrep\" rel=\"repos\" action=\"prnt\" title=\"Imprimir reporte\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-print\"></i></a>' Reportes,
+                           CONCAT('<a idreg=\"',a.id,'\" href=\"editar\" rel=\"',tty.alias,'\" action=\"upd\" title=\"Editar Mantenimiento\" class=\"btn btn-sm btn-warning\"><i class=\"fa fa-pencil text-white\"></i></a>') Editar
+                    FROM tec_equipment e, tec_valists ma, tec_valists m, tec_sites s, tec_company c, tec_activities a, tec_typeactivity t, tec_typeactivity tty
                     WHERE e.idModel = m.id
                         AND m.valfather = ma.id
                         AND e.siteId = s.id 
                         AND s.companyId = c.id
                         AND a.idTypeAct = t.id
                         AND e.id = a.idEquip
+                        AND tty.id = a.idTypeAct
+                        -- AND a.id > ? ";
+
+            $dp = array();
+            $im = 1;
+           
+            if( $_SESSION['u']['idp'] == 1 && $_SESSION['u']['ico'] == 1 ){
+                $sql .= ';';
+                //array_push($dp, ['kpa'=>1,'val'=>0,'typ'=>'int']);
+            } else {
+                $sql .= 'AND e.siteId = ?;';
+                array_push($dp, ['kpa'=>1,'val'=>$_SESSION['u']['isi'],'typ'=>'int']);
+            }
+
+            $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
+            //$ccols = array(0,1,2,4,7,8,9);
+            $ccols = array(0,3,6,7,8);
+            return $this->rndr->table_html($aw, $ccols, 'tabHtml');
+
+        }
+        private function listactiv2(array $data){
+            print_r($data);
+            $sql = "SELECT /*a.id Ítem, */DATE(a.fec_crea) 'Fecha registro', t.name Actividad, 
+                           CONCAT(UPPER(ma.label), ' ', UPPER(m.label)) 'Marca/Modelo', e.internalNumber 'Número interno',
+                           c.name Cliente, s.name Proyecto, a.startDate 'Fecha inicio', a.endDate 'Fecha fin',
+                           '<a href=\"prntrep\" rel=\"repos\" action=\"prnt\" title=\"Imprimir reporte\" class=\"btn btn-sm btn-success\"><i class=\"fa fa-print\"></i></a>' Reportes,
+                           CONCAT('<a idreg=\"',a.id,'\" href=\"editar\" rel=\"',tty.alias,'\" action=\"upd\" title=\"Editar Mantenimiento\" class=\"btn btn-sm btn-warning\"><i class=\"fa fa-pencil text-white\"></i></a>') Editar
+                    FROM tec_equipment e, tec_valists ma, tec_valists m, tec_sites s, tec_company c, tec_activities a, tec_typeactivity t, tec_typeactivity tty
+                    WHERE e.idModel = m.id
+                        AND m.valfather = ma.id
+                        AND e.siteId = s.id 
+                        AND s.companyId = c.id
+                        AND a.idTypeAct = t.id
+                        AND e.id = a.idEquip
+                        AND tty.id = a.idTypeAct
                         -- AND a.id > ? ";
 
             $dp = array();
@@ -335,14 +369,14 @@
 
                 if( strlen($v) > 0 ){
                     switch($k) {
-                        case 'txtFecInicio':
+                        case 'ini-date':
 
                             $sql .= " AND a.startDate = ? ";
                             array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'string']);
                             
                         break;
 
-                        case 'txtFecFin':
+                        case 'fin-date':
 
                             $sql .= " AND a.endDate = ? ";
                             array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'string']);
@@ -371,6 +405,7 @@
 
         }
 
+        
         // Cantidad de actividades por tipo
         private function cantactiv(int $data){
 

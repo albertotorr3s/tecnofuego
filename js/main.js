@@ -138,23 +138,7 @@ function renderDT() {
   $('#min, #max').on('change', function () {
     $('.newrone-table').dataTable().fnFilter(this.value)
   });
-  $.fn.dataTableExt.afnFiltering.push(
-    function (settings, data, dataIndex) {
-      var min = $('#min').val()
-      var max = $('#max').val()
-      var date = data[9];
-      // alert(date);
-      if (
-        (min == "" || max == "")
-        ||
-        (moment(date).isSameOrAfter(min) && moment(date).isSameOrBefore(max))
-      ) {
-        return true;
-      }
-      return false;
-
-    }
-  );
+  
 
 }
 function renderDTParam(tab) {
@@ -287,20 +271,21 @@ $(document).on('click', 'button.launch-action', function () {
 $(document).on('click', '#btnList', function (e) {
 
   e.preventDefault();
-
+  currentModel = $(this).attr('rel');
   var edu = true;
 
   if ($(this).hasClass("date-filter")) {
 
     var ini = $(this).attr('ini-date');
     var fin = $(this).attr('fin-date');
-
+    
     if ($('#' + ini).val() != '' && $('#' + fin).val() == '') {
       edu = false;
       alert('Ambas fechas deben ser ingresadas para realizar la búsqueda.');
     }
-
+    
   }
+
 
   if (edu) {
 
@@ -312,7 +297,7 @@ $(document).on('click', '#btnList', function (e) {
       'method': action,
       'args': $('#' + currentModel).formToObject()
     };
-
+    
     $.ajax({
       url: 'index.php',
       type: 'POST',
