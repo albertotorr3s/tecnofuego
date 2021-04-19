@@ -432,7 +432,7 @@ $(document).on('click', 'a[action=upd]', function (e) {
   var target = '#module-cont';
 
   var params = {
-    'model': currentModel,
+    'model': $(this).attr('rel'),
     'method': $(this).attr('href'),
     'args': $(this).attr('idreg')
   };
