@@ -271,7 +271,7 @@ $(document).on('click', 'button.launch-action', function () {
 $(document).on('click', '#btnList', function (e) {
 
   e.preventDefault();
-  currentModel = $(this).attr('rel');
+  // currentModel = $(this).attr('rel');
   var edu = true;
 
   if ($(this).hasClass("date-filter")) {
