@@ -338,7 +338,7 @@
 
         public function editarCompAsync(array $data){
 
-           print_r($data);
+          
             
             if($data['idActiv']){
                 $sql = "SELECT * FROM tec_activ_comp WHERE idactiv = ? AND idcomp = ? ";
@@ -374,7 +374,7 @@
                     ;
                 }
             }else{
-                $info['valField'] = $data['valor'];
+                $info['edo_reg'] = '2';
                 $info['usu_mod'] = $this->seda['idu'];
                 $info['fec_mod'] = date('Y-m-d H:i:s');
                 $info['ip_mod']  = Firewall::ipCatcher();
@@ -383,6 +383,16 @@
                                 'idComponent'=>$data['idCompo']);
     
                 $resp = $this->crud->update($info,BD_PREFI.'compo_vals',$where);
+                
+                $info2['idField'] = $data['idField'];
+                $info2['idComponent'] = $data['idCompo'];
+                $info2['valField'] = $data['valor'];
+                $info2['edo_reg'] = 1;
+                $info2['usu_crea'] = $this->seda['idu'];
+                $info2['fec_crea'] = date('Y-m-d H:i:s');
+                $info2['ip_crea']  = Firewall::ipCatcher();
+    
+                $resp2 = $this->crud->insert($info2,BD_PREFI.'compo_vals');
             }
         }
 

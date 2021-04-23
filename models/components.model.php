@@ -33,7 +33,8 @@ class components
         $this->rndr->setData($d);
         echo $this->rndr->rendertpl();
     }
-    public function prueba(){
+    public function prueba()
+    {
         $data = json_decode($_POST['args']);
 
         $info = array(
@@ -59,7 +60,7 @@ class components
                 AND cv.idField IN (31,34)
                 AND cv.valField = ?
                 AND c.idComponent = ? ";
-  
+
         $dp = array();
         array_push($dp, ['kpa' => 1, 'val' => $data['consecutivo'], 'typ' => 'string']);
         array_push($dp, ['kpa' => 2, 'val' => $data['componente'], 'typ' => 'string']);
@@ -67,13 +68,12 @@ class components
         $ar = $aw['res'][0];
 
         return $ar['cant'];
-
     }
-    
+
     // Listar productos y servicios  
     public function listar(array $data)
     {
-        
+
         $sql = "SELECT cy.name CLIENTE, s.name 'PROYECTO/MINA', p.description COMPONENTE, 
                         cv.valField 'SN/CONSEC.', f.label FAMILIA, ct.label CATEGORÍA, if(e.internalNumber IS NULL, 'N/A',e.internalNumber) U_EQUIPO,  
                         CASE c.edo_reg 
@@ -264,114 +264,110 @@ class components
             'idTySys'       =>  $data->slcTySys,
             'edo_reg'       =>  $data->slcEstado
         );
-            
+
         // $datosComponente = array();
         // $datosComponente += [ "consecutivo" => $data->{'txtConsecutivo-31'}, "componente" => $data->slcComponente ];
         // $componentesExistente = $this -> consultar($datosComponente);
         // if($componentesExistente == 0){
-        
-            if (!empty($data->hidId)) {
 
-                $info['usu_mod'] = $this->seda['idu'];
-                $info['fec_mod'] = date('Y-m-d H:i:s');
-                $info['ip_mod']  = Firewall::ipCatcher();
+        if (!empty($data->hidId)) {
 
-                $where = array('id' => $data->hidId);
+            $info['usu_mod'] = $this->seda['idu'];
+            $info['fec_mod'] = date('Y-m-d H:i:s');
+            $info['ip_mod']  = Firewall::ipCatcher();
 
-                $idco = $data->hidId;
+            $where = array('id' => $data->hidId);
 
-                $resp = $this->crud->update($info, BD_PREFI . 'components', $where);
-                
-                if ($data->slcEstado != 2){
+            $idco = $data->hidId;
 
-    
+            $resp = $this->crud->update($info, BD_PREFI . 'components', $where);
 
-                    $infc = array(
-                        'idEquip'   =>  null,
-                        'edo_reg'   =>  1
-                    );
-    
-                    $infc['usu_mod'] = $this->seda['idu'];
-                    $infc['fec_mod'] = date('Y-m-d H:i:s');
-                    $infc['ip_mod']  = Firewall::ipCatcher();
-    
-                    $wherec = array('idCompo' => $data->hidId);
-    
-                    $rc = $this->crud->update($infc,BD_PREFI.'equip_compos',$wherec);
-                    
-        
-                }
-                
-            } else {
+            if ($data->slcEstado != 2) {
 
-                $info['usu_crea'] = $this->seda['idu'];
-                $info['fec_crea'] = date('Y-m-d H:i:s');
-                $info['ip_crea']  = Firewall::ipCatcher();
 
-                $resp = $this->crud->insert($info, BD_PREFI . 'components');
-
-                $idco = $resp['lstId'];
 
                 $infc = array(
                     'idEquip'   =>  null,
-                    'idCompo'   =>  $idco,
                     'edo_reg'   =>  1
                 );
 
-                $infc['usu_crea'] = $this->seda['idu'];
-                $infc['fec_crea'] = date('Y-m-d H:i:s');
-                $infc['ip_crea']  = Firewall::ipCatcher();
+                $infc['usu_mod'] = $this->seda['idu'];
+                $infc['fec_mod'] = date('Y-m-d H:i:s');
+                $infc['ip_mod']  = Firewall::ipCatcher();
 
-                $rc = $this->crud->insert($infc,BD_PREFI.'equip_compos');
+                $wherec = array('idCompo' => $data->hidId);
 
+                $rc = $this->crud->update($infc, BD_PREFI . 'equip_compos', $wherec);
             }
+        } else {
 
-            $flds = explode(',', trim($data->hidCtrlFdls, ','));
+            $info['usu_crea'] = $this->seda['idu'];
+            $info['fec_crea'] = date('Y-m-d H:i:s');
+            $info['ip_crea']  = Firewall::ipCatcher();
 
-            foreach ($flds as $k => $v) {
+            $resp = $this->crud->insert($info, BD_PREFI . 'components');
 
-                $cmp = explode('-', $v);
-                $hid = str_replace('txt', 'hid', $v);
+            $idco = $resp['lstId'];
 
-                $infl = array(
-                    'idComponent'   =>  $idco,
-                    'idField'       =>  $cmp[1],
-                    'valField'      =>  $data->$v,
-                    'edo_reg'       =>  1
-                );
+            $infc = array(
+                'idEquip'   =>  null,
+                'idCompo'   =>  $idco,
+                'edo_reg'   =>  1
+            );
 
-                if (!empty($data->$hid)) {
+            $infc['usu_crea'] = $this->seda['idu'];
+            $infc['fec_crea'] = date('Y-m-d H:i:s');
+            $infc['ip_crea']  = Firewall::ipCatcher();
 
-                    $infl['usu_mod'] = $this->seda['idu'];
-                    $infl['fec_mod'] = date('Y-m-d H:i:s');
-                    $infl['ip_mod']  = Firewall::ipCatcher();
+            $rc = $this->crud->insert($infc, BD_PREFI . 'equip_compos');
+        }
 
-                    $whr = array('id' => $data->$hid);
+        $flds = explode(',', trim($data->hidCtrlFdls, ','));
 
-                    $r = $this->crud->update($infl, BD_PREFI . 'compo_vals', $whr);
-                } else {
+        foreach ($flds as $k => $v) {
 
-                    $infl['usu_crea'] = $this->seda['idu'];
-                    $infl['fec_crea'] = date('Y-m-d H:i:s');
-                    $infl['ip_crea']  = Firewall::ipCatcher();
+            $cmp = explode('-', $v);
+            $hid = str_replace('txt', 'hid', $v);
 
-                    $r = $this->crud->insert($infl, BD_PREFI . 'compo_vals');
-                }
+            $infl = array(
+                'idComponent'   =>  $idco,
+                'idField'       =>  $cmp[1],
+                'valField'      =>  $data->$v,
+                'edo_reg'       =>  1
+            );
 
-                unset($infl, $cmp, $hid, $r);
-            }
+            if (!empty($data->$hid)) {
 
-            if ($resp['rta'] == 'OK') {
-                $cls = 'alert-success';
-                $msg = 'Información guardada correctamente. &nbsp;&nbsp;<i class="fa fa-check" aria-hidden="true"></i>';
+                $infl['usu_mod'] = $this->seda['idu'];
+                $infl['fec_mod'] = date('Y-m-d H:i:s');
+                $infl['ip_mod']  = Firewall::ipCatcher();
+
+                $whr = array('id' => $data->$hid);
+
+                $r = $this->crud->update($infl, BD_PREFI . 'compo_vals', $whr);
             } else {
-                $cls = 'alert-danger';
-                $msg = 'Hubo un error guardando la información: ' . $resp['errmsg'] . ' &nbsp;&nbsp;<i class="fa fa-times" aria-hidden="true"></i>';
+
+                $infl['usu_crea'] = $this->seda['idu'];
+                $infl['fec_crea'] = date('Y-m-d H:i:s');
+                $infl['ip_crea']  = Firewall::ipCatcher();
+
+                $r = $this->crud->insert($infl, BD_PREFI . 'compo_vals');
             }
-    // }else{
-    //     $cls = 'alert-danger';
-    //     $msg = 'Ya existe el consecutivo para el componente escogido &nbsp;&nbsp;<i class="fa fa-times" aria-hidden="true"></i>';
-    // }
+
+            unset($infl, $cmp, $hid, $r);
+        }
+
+        if ($resp['rta'] == 'OK') {
+            $cls = 'alert-success';
+            $msg = 'Información guardada correctamente. &nbsp;&nbsp;<i class="fa fa-check" aria-hidden="true"></i>';
+        } else {
+            $cls = 'alert-danger';
+            $msg = 'Hubo un error guardando la información: ' . $resp['errmsg'] . ' &nbsp;&nbsp;<i class="fa fa-times" aria-hidden="true"></i>';
+        }
+        // }else{
+        //     $cls = 'alert-danger';
+        //     $msg = 'Ya existe el consecutivo para el componente escogido &nbsp;&nbsp;<i class="fa fa-times" aria-hidden="true"></i>';
+        // }
 
         $d = array(
             'data' => array(
@@ -450,7 +446,7 @@ class components
 
     // Listado de componentes
     public function compos(array $conf)
-    { 
+    {
         $sql = "SELECT p.id, p.description label
                     FROM " . BD_PREFI . "parts p, " . BD_PREFI . "parts_flds f
                     WHERE p.id = f.idPart
@@ -536,18 +532,34 @@ class components
                     WHERE f.idField = c.id
                         AND f.idField = v.idField
                         AND v.idComponent = ?
-                        AND f.idPart = ?;";
+                        AND f.idPart = ?
+                        AND v.edo_reg = ?;";
 
         $dp = array();
         array_push($dp, ['kpa' => 1, 'val' => $data['idco'], 'typ' => 'int']);
         array_push($dp, ['kpa' => 2, 'val' => $data['idpa'], 'typ' => 'int']);
+        array_push($dp, ['kpa' => 3, 'val' => 1, 'typ' => 'int']);
         $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
         $ar = $aw['res'];
-
+        $fbox = "";
         foreach ($ar as $k => $v) {
 
+            $sql2 = "SELECT f.id, f.idField, c.label campo, f.idType, v.valField, v.id idVal, v.fec_crea created_at
+                    FROM tec_parts_flds f, tec_valists c, tec_compo_vals v
+                    WHERE f.idField = c.id
+                        AND f.idField = v.idField
+                        AND v.idComponent = ?
+                        AND f.idPart = ?
+                        AND v.idField = ?;";
+
+            $dp2 = array();
+            array_push($dp2, ['kpa' => 1, 'val' => $data['idco'], 'typ' => 'int']);
+            array_push($dp2, ['kpa' => 2, 'val' => $data['idpa'], 'typ' => 'int']);
+            array_push($dp2, ['kpa' => 3, 'val' => $v['idField'], 'typ' => 'int']);
+            $aw2 = $this->crud->select_group($sql2, count($dp2), $dp2, 'arra');
+            $ar2 = $aw2['res'];
             $fld = 'txt' . str_replace(" ", "", ucwords($v['campo'])) . '-' . $v['idField'];
-            $lflds .= $fld . ',';
+            $lflds = $fld . ',';
             $hfld = 'hid' . str_replace(" ", "", ucwords($v['campo'])) . '-' . $v['idField'];
 
             switch ($v['idType']) {
@@ -558,8 +570,17 @@ class components
                                         <label class="form-control-label">' . $v['campo'] . ' <span class="text-danger">*</span></label>
                                         <input type="text" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" value="' . $v['valField'] . '" required>
                                         <input type="hidden" id="' . $hfld . '" name="' . $hfld . '" value="' . $v['idVal'] . '">
-                                    </div>
-                                  </div>';
+                                    </div>';
+                    $fbox .= '<div class="form-group">
+                                    <label class="form-control-label">historial <span class="text-danger">*</span></label>
+                                    <select name="" id="" class="form-control col-1">
+                                    <option value="" selected>?</option>';
+                    foreach ($ar2 as $ar) {
+                        $fbox .=  '<option value="">valor : ' . $ar['valField'] .  ' - fecha de cambio: '  . $ar['created_at'] . '</option>';
+                    }
+                    $fbox .= '</select>
+                    </div>
+                    </div>';
                     break;
 
                 case 42: // Fecha
@@ -568,8 +589,17 @@ class components
                                         <label class="form-control-label">' . $v['campo'] . ' <span class="text-danger">*</span></label>
                                         <input type="date" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" value="' . $v['valField'] . '" required>
                                         <input type="hidden" id="' . $hfld . '" name="' . $hfld . '" value="' . $v['idVal'] . '">
-                                    </div>
-                                  </div>';
+                                    </div>';
+                    $fbox .= '<div class="form-group">
+                                  <label class="form-control-label">historial <span class="text-danger">*</span></label>
+                                  <select name="" id="" class="form-control col-1">
+                                  <option value="" selected>?</option>';
+                    foreach ($ar2 as $ar) {
+                        $fbox .=  '<option value="">valor : ' . $ar['valField'] .  ' - fecha de cambio: '  . $ar['created_at'] . '</option>';
+                    }
+                    $fbox .= '</select>
+                  </div>
+                  </div>';
                     break;
 
                 case 43: // Texto
@@ -578,8 +608,17 @@ class components
                                         <label class="form-control-label">' . $v['campo'] . ' <span class="text-danger">*</span></label>
                                         <input type="text" id="' . $fld . '" idfi="' . $v['idField'] . '" name="' . $fld . '" placeholder="' . $v['campo'] . '" class="form-control ctrl-fld" value="' . $v['valField'] . '" required>
                                         <input type="hidden" id="' . $hfld . '" name="' . $hfld . '" value="' . $v['idVal'] . '">
-                                    </div>
-                                  </div>';
+                                    </div>';
+                    $fbox .= '<div class="form-group">
+                                    <label class="form-control-label">historial <span class="text-danger">*</span></label>
+                                    <select name="" id="" class="form-control col-1">
+                                    <option value="" selected>?</option>';
+                    foreach ($ar2 as $ar) {
+                        $fbox .=  '<option value="">valor : ' . $ar['valField'] .  ' - fecha de cambio: '  . $ar['created_at'] . '</option>';
+                    }
+                    $fbox .= '</select>
+                    </div>
+                    </div>';
                     break;
             }
         }
@@ -633,8 +672,8 @@ class components
         if ($data['idfi'] == 31) {
             array_push($dp, ['kpa' => 4, 'val' => $data['proy'], 'typ' => 'int']);
         }
-            //  var_dump($dp);
-   $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
+        //  var_dump($dp);
+        $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
         $ar = $aw['res'][0];
         // $ar['cant']=1;
 
