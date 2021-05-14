@@ -592,7 +592,7 @@
     
             $info = array(
                 'idEquip'       =>  $data['idEquip'],
-                'idTypeAct'     =>  $data['idActivnew'],
+                'idTypeAct'     =>  isset($data['idActivnew']) ? isset($data['idActivnew']) : 5,
                 'idLocation'    =>  (int)$data['slcLocal'],
                 'startDate'     =>  $data['txtFecIniMmto'],
                 'endDate'       =>  $data['txtFecFinMmto'],
@@ -998,6 +998,7 @@
                         AND cv.idComponent = ?
                         AND ec.edo_reg = ?
                         AND c.edo_reg = ?
+                        AND cv.edo_reg = ?
                         GROUP BY v.id";
 
             $dp = array();
@@ -1005,6 +1006,7 @@
             array_push($dp, ['kpa'=>2,'val'=>$data['idco'],'typ'=>'int']);
             array_push($dp, ['kpa'=>3,'val'=>1,'typ'=>'int']);
             array_push($dp, ['kpa'=>4,'val'=>2,'typ'=>'int']);
+            array_push($dp, ['kpa'=>5,'val'=>1,'typ'=>'int']);
             $aw = $this->crud->select_group($sql, count($dp), $dp, 'arra');
             $ar = $aw['res'];
 

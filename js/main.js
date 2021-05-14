@@ -16,6 +16,38 @@ $(document).on('keypress', 'input, select', function (e) {
 
 });
 
+$("#filterspecific").click(function () {
+  var inidate = document.getElementById('ini-date');
+  var findate = document.getElementById('fin-date');
+  var target = '#contentdinamic';
+  var params = {
+    'model': 'inicio',
+    'method': 'listactiv2',
+    'args': {
+      'ini': inidate.value,
+      'fin': findate.value,
+    }
+  };
+  $.ajax({
+    url: 'index.php',
+    type: 'POST',
+    dataType: 'html',
+    data: params,
+    cache: false, // Appends _={timestamp} to the request query string
+    beforeSend: function () {
+      $(target).html(loader).fadeIn('slow');
+    },
+    success: function ($dres) {
+      $(target).html($dres);
+      renderDT();
+      valProfile();
+    }
+  }).done(function () {
+    $(target).fadeIn('slow');
+  });
+});
+
+
 // Parseadores de JSON
 var jsonJobs = {
 
@@ -138,7 +170,7 @@ function renderDT() {
   $('#min, #max').on('change', function () {
     $('.newrone-table').dataTable().fnFilter(this.value)
   });
-  
+
 
 }
 function renderDTParam(tab) {
@@ -278,12 +310,12 @@ $(document).on('click', '#btnList', function (e) {
 
     var ini = $(this).attr('ini-date');
     var fin = $(this).attr('fin-date');
-    
+
     if ($('#' + ini).val() != '' && $('#' + fin).val() == '') {
       edu = false;
       alert('Ambas fechas deben ser ingresadas para realizar la búsqueda.');
     }
-    
+
   }
 
 
@@ -297,7 +329,7 @@ $(document).on('click', '#btnList', function (e) {
       'method': action,
       'args': $('#' + currentModel).formToObject()
     };
-    
+
     $.ajax({
       url: 'index.php',
       type: 'POST',

@@ -340,7 +340,7 @@
 
         public function editarCompAsync(array $data){
 
-            
+            print_r($data);
             if($data['idActiv']){
                 $sql = "SELECT * FROM tec_activ_comp WHERE idactiv = ? AND idcomp = ? ";
                 $dp = array();
@@ -375,16 +375,16 @@
                     ;
                 }
             }else{
-                $info['edo_reg'] = '2';
-                $info['usu_mod'] = $this->seda['idu'];
-                $info['fec_mod'] = date('Y-m-d H:i:s');
-                $info['ip_mod']  = Firewall::ipCatcher();
+                $infos['edo_reg'] = 2;
+                $infos['usu_mod'] = $this->seda['idu'];
+                $infos['fec_mod'] = date('Y-m-d H:i:s');
+                $infos['ip_mod']  = Firewall::ipCatcher();
     
-                $where = array('idField'=>$data['idField'],
+                $wheres = array('idField'=>$data['idField'],
                                 'idComponent'=>$data['idCompo']);
     
-                $resp = $this->crud->update($info,BD_PREFI.'compo_vals',$where);
-
+                $resp = $this->crud->update($infos,BD_PREFI.'compo_vals',$wheres);
+                print_r($resp);
                 $info2['idField'] = $data['idField'];
                 $info2['idComponent'] = $data['idCompo'];
                 $info2['valField'] = $data['valor'];
@@ -588,12 +588,10 @@
 
 
         // Acción de guardar
-        public function guardar(array $data){
-            
-    
+        public function guardar(array $data){   
             $info = array(
                 'idEquip'       =>  $data['idEquip'],
-                'idTypeAct'     =>  $data['idActivnew'],
+                'idTypeAct'     =>  isset($data['idActivnew']) ? isset($data['idActivnew']) : 2,
                 'idLocation'    =>  (int)$data['slcLocal'],
                 'startDate'     =>  $data['txtFecIniMmto'],
                 'endDate'       =>  $data['txtFecFinMmto'],
@@ -1791,7 +1789,7 @@
         
         public function savemmtos(array $data){
 
-           
+
             
             $info = array(
                 'idEquip'       =>  $data['idEquip'],

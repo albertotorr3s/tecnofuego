@@ -376,7 +376,7 @@
                           <label class="form-control-label" for="ini-date">
                               Fecha de inicio
                           </label>
-                          <div class="input-group date mb-3" id="ini-date">
+                          <div class="input-group date mb-3">
                               <input type='date' class="form-control" id="ini-date" name="ini-date" aria-describedby="basic-addon3" placeholder="Fecha inicial" value=""/>
                              
                           </div>
@@ -386,9 +386,9 @@
                           <label class="form-control-label" for="fin-date">
                               Fecha de finalización
                           </label>
-                          <div class="input-group date mb-3" id="fin-date">
+                          <div class="input-group date mb-3">
                               <input type='date' class="form-control" id="fin-date" name="fin-date" aria-describedby="basic-addon3" placeholder="Fecha final" value=""/>
-                              
+              
                           </div>
                         </div>
               
@@ -402,7 +402,7 @@
               
                   <div class="card-footer text-right">
               
-                    <button id="btnList" type="button" class="btn btn-info date-filter" rel="inicio" action="listactiv2" target="tabHtml">
+                    <button id="filterspecific" type="button" class="btn btn-info date-filter">
                       Buscar &nbsp;&nbsp;<i class="fa fa-search"></i>
                     </button>
               
@@ -434,7 +434,7 @@
 
                     <div class="row mt-3">
 
-                      <div class="col-lg-12" style="font-size: 0.78em;overflow:scroll;">
+                      <div class="col-lg-12" id="contentdinamic" style="font-size: 0.78em;overflow:scroll;">
                       
 
                         {lactiv}
@@ -501,7 +501,6 @@
   <script src="vendor/jquery.cookie/jquery.cookie.js"> </script>
   <script src="vendor/chart.js/Chart.min.js"></script>
   <script src="vendor/jquery-validation/jquery.validate.min.js"></script>
-  <script src="js/charts-home.js"></script>
   <!-- Main File-->
   <script src="js/front.js"></script>
   <!-- My Main File -->

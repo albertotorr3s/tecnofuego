@@ -44,7 +44,7 @@
                         AND m.valfather = ma.id
                         AND e.siteId = s.id ";
 
-			$dp = array();
+			$dp = array(); 
             $im = 1;
 
             foreach ($data as $k => $v) {
@@ -53,7 +53,7 @@
 
                     switch($k) {
 
-                        case 'slcEmpresa':
+                        case 'slcCliente':
 
                             $sql .= " AND s.companyId = ? ";
                             array_push($dp, ['kpa'=>$im,'val'=>$v,'typ'=>'int']);
